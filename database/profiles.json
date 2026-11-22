@@ -1,0 +1,37 @@
+[
+  {
+    "id": "0001",
+    "nome": "Maria",
+    "nivel": "leigo",
+    "estilo": "didatico",
+    "canal": "chat"
+  },
+  {
+    "id": "0002",
+    "nome": "Lucas",
+    "nivel": "intermediario",
+    "estilo": "direto",
+    "canal": "email"
+  },
+  {
+    "id": "0003",
+    "nome": "Laura",
+    "nivel": "avancado",
+    "estilo": "detalhado",
+    "canal": "telefone"
+  },
+  {
+    "id": "0004",
+    "nome": "Marcos",
+    "nivel": "avancado",
+    "estilo": "didatico",
+    "canal": "email"
+  },
+  {
+    "id": "0005",
+    "nome": "Luiza",
+    "nivel": "leigo",
+    "estilo": "detalhado",
+    "canal": "chat"
+  }
+]
