@@ -11,3 +11,10 @@ class PerfilCliente:
 
     def to_dict(self):
         return asdict(self)
+
+
+@dataclass
+class Ticket:
+    id: str
+    titulo: str
+    descricao: str

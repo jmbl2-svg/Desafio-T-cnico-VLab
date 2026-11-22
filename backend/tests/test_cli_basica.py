@@ -7,7 +7,7 @@ def perfil_por_id(perfil_id):
     return next(
         perfil
         for perfil in cli.carregar_perfis()
-        if perfil["id"] == perfil_id
+        if perfil.id == perfil_id
     )
 
 
