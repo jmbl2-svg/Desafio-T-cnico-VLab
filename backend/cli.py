@@ -1,9 +1,12 @@
 import json
+import secrets
+from datetime import datetime, timezone
 from pathlib import Path
 
 
 RAIZ = Path(__file__).resolve().parent.parent
 ARQUIVO_PERFIS = RAIZ / "database" / "profiles.json"
+PASTA_EXECUCOES = RAIZ / "data" / "runs"
 
 
 def carregar_perfis():
@@ -67,6 +70,29 @@ def orientar(perfil):
         ]
     }
 
+def salvar_execucao(perfil, relato, saida):
+    PASTA_EXECUCOES.mkdir(parents=True, exist_ok=True)
+
+    while True:
+        run_id = str(secrets.randbelow(900_000_000_000) + 100_000_000_000)
+        caminho = PASTA_EXECUCOES / f"{run_id}.json"
+        registro = {
+            "run_id": run_id,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "perfil": perfil,
+            "ticket": relato,
+            "saida": saida,
+        }
+
+        try:
+            with caminho.open("x", encoding="utf-8") as arquivo:
+                json.dump(registro, arquivo, ensure_ascii=False, indent=2)
+        except FileExistsError:
+            continue
+
+        return caminho
+
+
 def main():
     perfil = escolher_perfil(carregar_perfis())
 
@@ -88,6 +114,9 @@ def main():
         print(f"\nPasso {passo['ordem']}: {passo['acao']}")
         print(f"O que observar: {passo['sinal_esperado']}")
         print(f"Se não funcionar: {passo['se_falhar']}")
+
+    caminho = salvar_execucao(perfil, relato, saida)
+    print(f"\nAtendimento salvo em: {caminho}")
 
 
 if __name__ == "__main__":
