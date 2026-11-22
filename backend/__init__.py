@@ -1,0 +1,1 @@
+"""V-LAB Assistente de Suporte Técnico - Pacote Backend."""
