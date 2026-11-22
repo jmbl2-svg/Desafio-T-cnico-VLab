@@ -3,6 +3,8 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
+from backend.domain.models import PerfilCliente
+
 
 RAIZ = Path(__file__).resolve().parent.parent
 ARQUIVO_PERFIS = RAIZ / "database" / "profiles.json"
@@ -11,21 +13,25 @@ PASTA_EXECUCOES = RAIZ / "data" / "runs"
 
 def carregar_perfis():
     with ARQUIVO_PERFIS.open(encoding="utf-8") as arquivo:
-        return json.load(arquivo)
+        dados = json.load(arquivo)
+
+    return [PerfilCliente(**item) for item in dados]
 
 
 def escolher_perfil(perfis):
     print("Perfis disponíveis:")
     for perfil in perfis:
-        print(f"- {perfil['id']}: {perfil['nome']} ({perfil['nivel']})")
+        print(f"- {perfil.id}: {perfil.nome} ({perfil.nivel})")
 
-    perfil_id = input("Digite o ID do cliente: ").strip().lower()
+    perfil_id = input("Digite o ID do cliente: ").strip()
 
     for perfil in perfis:
-        if perfil["id"] == perfil_id:
+        if perfil.id == perfil_id:
             return perfil
 
     return None
+
+
 def orientar(perfil):
     verificacoes = {
         "leigo": (
@@ -51,12 +57,12 @@ def orientar(perfil):
         "telefone": "Descreva em voz alta o último estado que conseguiu confirmar.",
     }
 
-    acao, sinal, motivo = verificacoes[perfil["nivel"]]
-    alternativa = retornos[perfil["canal"]]
+    acao, sinal, motivo = verificacoes[perfil.nivel]
+    alternativa = retornos[perfil.canal]
 
-    if perfil["estilo"] == "didatico":
+    if perfil.estilo == "didatico":
         acao = f"{acao} Por que fazer isso? {motivo}"
-    elif perfil["estilo"] == "detalhado":
+    elif perfil.estilo == "detalhado":
         sinal = f"{sinal} Registre também o que aconteceu imediatamente antes."
 
     return {
@@ -70,6 +76,7 @@ def orientar(perfil):
         ]
     }
 
+
 def salvar_execucao(perfil, relato, saida):
     PASTA_EXECUCOES.mkdir(parents=True, exist_ok=True)
 
@@ -79,7 +86,7 @@ def salvar_execucao(perfil, relato, saida):
         registro = {
             "run_id": run_id,
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            "perfil": perfil,
+            "perfil": perfil.to_dict(),
             "ticket": relato,
             "saida": saida,
         }
@@ -106,7 +113,7 @@ def main():
         print("Informe o problema para continuar.")
         return
 
-    print(f"Cliente: {perfil['nome']} | Canal: {perfil['canal']}")
+    print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
     saida = orientar(perfil)
 
