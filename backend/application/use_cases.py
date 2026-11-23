@@ -1,6 +1,7 @@
+from contextlib import nullcontext
 from hashlib import sha256
 
-from backend.application.ports import GeradorLLMPort, HistoricoPort
+from backend.application.ports import GeradorLLMPort, HistoricoPort, LockPort
 from backend.domain.rules import chave_execucao
 
 
@@ -30,10 +31,11 @@ def montar_prompt(pasta_prompts, perfil, relato, tipo="resolucao", versao="v1"):
 
 
 class GerarRespostaUseCase:
-    def __init__(self, gerador: GeradorLLMPort, historico: HistoricoPort, pasta_prompts):
+    def __init__(self, gerador: GeradorLLMPort, historico: HistoricoPort, pasta_prompts, trava: LockPort | None = None):
         self.gerador = gerador
         self.historico = historico
         self.pasta_prompts = pasta_prompts
+        self.trava = trava
 
     def executar(self, perfil, relato, tipo="resolucao", versao="v1", sem_cache=False):
         prompt, template_hash = _preparar_prompt(self.pasta_prompts, perfil, relato, tipo, versao)
@@ -46,17 +48,18 @@ class GerarRespostaUseCase:
             "modelo": getattr(self.gerador, "identidade_cache", modelo),
             "parametros": parametros,
         })
-        anterior = None if sem_cache else self.historico.buscar_por_chave(chave)
-        if anterior is None:
-            saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
-            fonte = None
-        else:
-            saida = anterior["saida"]
-            fonte = anterior["run_id"]
-            modelo = anterior["modelo"]
-        caminho = self.historico.salvar_execucao(
-            perfil, relato, saida, tipo, versao, provedor=provedor, modelo=modelo,
-            parametros=parametros, template_hash=template_hash, input_key=chave,
-            source_run_id=fonte,
-        )
-        return saida, caminho
+        with self.trava.adquirir(chave) if self.trava else nullcontext():
+            anterior = None if sem_cache else self.historico.buscar_por_chave(chave)
+            if anterior is None:
+                saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+                fonte = None
+            else:
+                saida = anterior["saida"]
+                fonte = anterior["run_id"]
+                modelo = anterior["modelo"]
+            caminho = self.historico.salvar_execucao(
+                perfil, relato, saida, tipo, versao, provedor=provedor, modelo=modelo,
+                parametros=parametros, template_hash=template_hash, input_key=chave,
+                source_run_id=fonte,
+            )
+            return saida, caminho

@@ -78,3 +78,21 @@ def test_gravacao_preserva_execucao_em_caso_de_colisao(tmp_path, monkeypatch):
     assert segundo != primeiro
     assert "Primeiro." in primeiro.read_text(encoding="utf-8")
     assert set(primeiro.parent.iterdir()) == {primeiro, segundo}
+
+
+def test_trava_tem_timeout_e_libera_apos_erro(tmp_path):
+    import pytest
+
+    from backend.adapters.file_lock import FileLock
+
+    trava = FileLock(tmp_path, timeout=0)
+    chave = "a" * 64
+    with pytest.raises(RuntimeError, match="interrompido"):
+        with trava.adquirir(chave):
+            with pytest.raises(TimeoutError):
+                with trava.adquirir(chave):
+                    pytest.fail("Trava adquirida duas vezes")
+            raise RuntimeError("interrompido")
+    with trava.adquirir(chave):
+        assert (tmp_path / f"{chave}.lock").is_file()
+    assert not list(tmp_path.iterdir())

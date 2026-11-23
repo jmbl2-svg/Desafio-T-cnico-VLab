@@ -1,3 +1,4 @@
+from contextlib import AbstractContextManager
 from typing import Protocol
 
 
@@ -13,4 +14,9 @@ class HistoricoPort(Protocol):
 
     def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1", **metadados):
         """Grava uma execução concluída e devolve seu caminho."""
+        ...
+
+
+class LockPort(Protocol):
+    def adquirir(self, chave: str) -> AbstractContextManager[None]:
         ...
