@@ -56,4 +56,6 @@ class FakeGeradorLLM:
             return saida
         if tipo == "perguntas":
             return json.loads("{\"itens\":[{\"prioridade\":1,\"pergunta\":\"O que aparece na tela?\",\"decisao_afetada\":\"Define a etapa a investigar.\"}]}")
+        if tipo == "fluxo":
+            return json.loads("{\"inicio\":\"verificar\",\"nos\":[{\"id\":\"verificar\",\"condicao\":\"A falha se repete?\",\"destinos\":{\"sim\":\"coletar\",\"nao\":\"acompanhar\"}},{\"id\":\"coletar\",\"acao_terminal\":\"Registre a etapa e a mensagem.\"},{\"id\":\"acompanhar\",\"acao_terminal\":\"Informe quando a falha voltar.\"}],\"ascii_diagram\":\"[Verificar] -> Sim: coletar | Não: acompanhar\"}")
         return orientar(perfil)

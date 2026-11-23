@@ -7,6 +7,8 @@ def validar_saida(tipo, saida):
         validar_diagnostico(saida)
     elif tipo == "perguntas":
         validar_perguntas(saida)
+    elif tipo == "fluxo":
+        validar_fluxo(saida)
     else:
         raise ValueError(f"Tipo de conteúdo desconhecido: {tipo}")
 
@@ -53,3 +55,45 @@ def validar_perguntas(saida):
         for campo in ("pergunta", "decisao_afetada"):
             if not isinstance(item.get(campo), str) or not item[campo].strip():
                 raise ValueError(f"A pergunta precisa preencher '{campo}'.")
+
+
+def validar_fluxo(saida):
+    nos = saida.get("nos")
+    if not isinstance(nos, list) or not nos or any(
+        not isinstance(no, dict) or not isinstance(no.get("id"), str) or not no["id"]
+        for no in nos
+    ):
+        raise ValueError("O fluxo precisa de nós com identificadores válidos.")
+    por_id = {no["id"]: no for no in nos}
+    inicio = saida.get("inicio")
+    if len(por_id) != len(nos) or not isinstance(inicio, str) or inicio not in por_id:
+        raise ValueError("O início do fluxo e os identificadores precisam ser válidos.")
+    visitados = set()
+    pendentes = set()
+
+    def visitar(identificador):
+        if identificador in pendentes:
+            raise ValueError("O fluxo não pode conter ciclos.")
+        if identificador in visitados:
+            return
+        pendentes.add(identificador)
+        no = por_id[identificador]
+        destinos = no.get("destinos")
+        if isinstance(destinos, dict) and destinos:
+            if not isinstance(no.get("condicao"), str) or not no["condicao"].strip():
+                raise ValueError("Um nó de decisão precisa de uma condição.")
+            for destino in destinos.values():
+                if not isinstance(destino, str) or destino not in por_id:
+                    raise ValueError("O fluxo aponta para um destino inexistente.")
+                visitar(destino)
+        elif not isinstance(no.get("acao_terminal"), str) or not no["acao_terminal"].strip():
+            raise ValueError("Um nó terminal precisa de uma ação.")
+        pendentes.remove(identificador)
+        visitados.add(identificador)
+
+    visitar(inicio)
+    if visitados != set(por_id):
+        raise ValueError("Todos os nós devem ser alcançáveis pelo início.")
+    diagrama = saida.get("ascii_diagram")
+    if not isinstance(diagrama, str) or not diagrama.strip():
+        raise ValueError("O fluxo precisa de um diagrama.")

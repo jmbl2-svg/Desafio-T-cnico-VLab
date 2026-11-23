@@ -1,0 +1,20 @@
+{
+  "title": "Resposta de fluxo",
+  "type": "object",
+  "required": [
+    "inicio",
+    "nos",
+    "ascii_diagram"
+  ],
+  "properties": {
+    "inicio": {
+      "type": "string"
+    },
+    "nos": {
+      "type": "array"
+    },
+    "ascii_diagram": {
+      "type": "string"
+    }
+  }
+}
