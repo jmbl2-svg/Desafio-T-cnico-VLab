@@ -1,0 +1,4 @@
+Tarefa: escreva uma resolução para o problema relatado.
+Para cada passo, informe a ação, o sinal esperado e uma alternativa se falhar.
+Retorne um objeto JSON com passos. Cada item deve conter ordem (inteiro),
+acao, sinal_esperado e se_falhar (textos).

@@ -5,6 +5,7 @@ from backend.adapters.json_storage import JsonStorageAdapter
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_CATALOGOS = RAIZ / "database"
+PASTA_PROMPTS = RAIZ / "IA" / "prompts"
 PASTA_EXECUCOES = RAIZ / "data" / "runs"
 
 
@@ -32,6 +33,42 @@ def escolher_perfil(perfis):
             return perfil
 
     return None
+
+
+def escolher_relato(tickets):
+    print("\nTickets disponíveis:")
+    for ticket in tickets:
+        print(f"- {ticket.id}: {ticket.titulo}")
+
+    codigo = input("ID do ticket (Enter para escrever um relato): ").strip().lower()
+    if not codigo:
+        relato = input("Descreva o problema: ").strip()
+        if relato:
+            return relato
+        print("Informe o problema para continuar.")
+        return None
+
+    for ticket in tickets:
+        if ticket.id == codigo:
+            return ticket.descricao
+
+    print("Ticket não encontrado. Use um dos IDs da lista.")
+    return None
+
+
+def montar_prompt(perfil, relato):
+    pasta = PASTA_PROMPTS / "v1"
+    base = (pasta / "base.txt").read_text(encoding="utf-8")
+    estrategia = (pasta / "resolucao.txt").read_text(encoding="utf-8")
+    contexto = base.format(
+        nome=perfil.nome,
+        perfil_id=perfil.id,
+        nivel=perfil.nivel,
+        estilo=perfil.estilo,
+        canal=perfil.canal,
+        relato=relato,
+    )
+    return f"{contexto}\n{estrategia}"
 
 
 def orientar(perfil):
@@ -90,11 +127,13 @@ def main():
         print("Perfil não encontrado. Use um dos IDs da lista.")
         return
 
-    relato = input("Descreva o problema: ").strip()
-
-    if not relato:
-        print("Informe o problema para continuar.")
+    relato = escolher_relato(carregar_tickets())
+    if relato is None:
         return
+
+    prompt = montar_prompt(perfil, relato)
+    print("\nPrompt de resolução (demonstração offline):")
+    print(prompt)
 
     print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
