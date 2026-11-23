@@ -1,0 +1,12 @@
+**
+!requirements.txt
+!backend/
+!backend/**
+!database/
+!database/**
+!IA/
+!IA/**
+!frontend/
+!frontend/standalone.html
+**/__pycache__/
+**/.env
