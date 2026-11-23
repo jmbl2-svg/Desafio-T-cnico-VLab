@@ -6,6 +6,11 @@
 <title>Suporte técnico | V-LAB</title>
 <style>
 :root { color-scheme: light; --fundo:#eaf0f5; --painel:#fff; --texto:#182b3c; --muted:#456075; --linha:#c4d3df; --acao:#086b59; }
+:root[data-tema="escuro"] {
+  color-scheme:dark; --fundo:#11202d; --painel:#172d3d; --texto:#e2f0f8;
+  --muted:#b6cddc; --linha:#496176; --acao:#087c67;
+}
+a { color:var(--texto); }
 * { box-sizing:border-box; }
 body { font: 16px system-ui, sans-serif; background:var(--fundo); color:var(--texto); margin:0; }
 main { max-width:980px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem; }
@@ -25,7 +30,7 @@ fieldset { border:1px solid var(--linha); border-radius:8px; min-width:0; displa
 </head>
 <body>
 <main>
-<header><h1>Assistente de suporte V-LAB</h1><button id="sair" hidden>Sair</button></header>
+<header><h1>Assistente de suporte V-LAB</h1><button id="tema" type="button">Alternar tema</button> <button id="sair" hidden>Sair</button></header>
 <p id="status" role="status" aria-live="polite"></p>
 <section id="conta" hidden>
 <h2>Acesso</h2>
@@ -66,6 +71,21 @@ fieldset { border:1px solid var(--linha); border-radius:8px; min-width:0; displa
 <script>
 const $ = (id) => document.getElementById(id);
 const form = $("cenario");
+const sistema = matchMedia("(prefers-color-scheme: dark)");
+const definirTema = (tema) => {
+  document.documentElement.dataset.tema = tema;
+  $("tema").textContent = tema === "escuro" ? "Usar tema claro" : "Usar tema escuro";
+};
+const temaSistema = () => sistema.matches ? "escuro" : "claro";
+definirTema(localStorage.getItem("vlab-theme") || temaSistema());
+sistema.addEventListener("change", () => {
+  if (!localStorage.getItem("vlab-theme")) definirTema(temaSistema());
+});
+$("tema").addEventListener("click", () => {
+  const tema = document.documentElement.dataset.tema === "escuro" ? "claro" : "escuro";
+  localStorage.setItem("vlab-theme", tema);
+  definirTema(tema);
+});
 const status = $("status");
 const informar = (mensagem) => { status.textContent = mensagem; };
 
