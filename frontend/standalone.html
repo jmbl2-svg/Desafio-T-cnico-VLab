@@ -22,9 +22,18 @@ pre { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--texto); }
 </head>
 <body>
 <main>
-<header><h1>Assistente de suporte V-LAB</h1></header>
+<header><h1>Assistente de suporte V-LAB</h1><button id="sair" hidden>Sair</button></header>
 <p id="status" role="status" aria-live="polite"></p>
-<section id="painel">
+<section id="conta" hidden>
+<h2>Acesso</h2>
+<form id="credenciais">
+<label>Usuário<input name="usuario" autocomplete="username" required minlength="3" maxlength="64"></label>
+<label>Senha<input name="senha" type="password" autocomplete="current-password" required minlength="10" maxlength="128"></label>
+<button name="acao" value="login">Entrar</button>
+<button name="acao" value="registro">Criar conta e entrar</button>
+</form>
+</section>
+<section id="painel" hidden>
 <h2>Atendimento</h2>
 <form id="cenario">
 <label>Perfil<select name="perfil" required></select></label>
@@ -96,7 +105,39 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-carregarCatalogos().catch(erro => informar(erro.message));
+async function aplicarSessao(usuario) {
+  $("conta").hidden = Boolean(usuario);
+  $("painel").hidden = !usuario;
+  $("sair").hidden = !usuario;
+  if (usuario) await carregarCatalogos();
+}
+
+$("credenciais").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const conta = e.currentTarget;
+  const campos = new FormData(conta);
+  const corpo = { usuario: campos.get("usuario"), senha: campos.get("senha") };
+  try {
+    if (e.submitter?.value === "registro") await api("/api/auth/registro", "POST", corpo);
+    const dados = await api("/api/auth/login", "POST", corpo);
+    conta.reset();
+    await aplicarSessao(dados.usuario);
+    informar("");
+  } catch (erro) {
+    informar(erro.message);
+  }
+});
+
+$("sair").addEventListener("click", async () => {
+  try {
+    await api("/api/auth/logout", "POST");
+    location.reload();
+  } catch (erro) {
+    informar(erro.message);
+  }
+});
+
+api("/api/auth/sessao").then(dados => aplicarSessao(dados.usuario)).catch(erro => informar(erro.message));
 </script>
 </body>
 </html>

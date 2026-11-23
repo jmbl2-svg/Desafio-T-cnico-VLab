@@ -1,12 +1,17 @@
 import logging
+from contextvars import ContextVar
+from hashlib import sha256
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, model_validator
 
 from backend.adapters.json_storage import JsonStorageAdapter
+from backend.adapters.web_auth import COOKIE_NAME, SESSION_SECONDS, WebAuth
 from backend.adapters.llm_provider import ErroProvedor, LLMIndisponivel
 from backend.bootstrap import criar_geracao, diretorio_dados
 from backend.application.use_cases import avaliar_comparacao, comparar_execucoes
@@ -16,6 +21,84 @@ RAIZ = Path(__file__).resolve().parents[1]
 CATALOGOS = RAIZ / "database"
 PROMPTS = RAIZ / "IA" / "prompts"
 app = FastAPI(title="V-LAB Suporte Técnico")
+USUARIO_ATIVO = ContextVar("usuario_ativo", default=None)
+PUBLICOS = {"/api/saude", "/api/auth/registro", "/api/auth/login", "/api/auth/sessao"}
+
+
+def autenticacao():
+    pasta = diretorio_dados(RAIZ / "data")
+    pasta.mkdir(parents=True, exist_ok=True)
+    return WebAuth(str(pasta))
+
+
+@app.middleware("http")
+async def verificar_sessao(request: Request, call_next):
+    caminho = request.url.path.rstrip("/")
+    if not caminho.startswith("/api/"):
+        return await call_next(request)
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        origem = request.headers.get("origin")
+        if origem and origem != str(request.base_url).rstrip("/"):
+            return JSONResponse({"detail": "Origem da solicitação inválida."}, status_code=403)
+    if caminho in PUBLICOS:
+        return await call_next(request)
+    token = request.cookies.get(COOKIE_NAME)
+    usuario = await run_in_threadpool(autenticacao().user_for, token) if token else None
+    if usuario is None:
+        return JSONResponse({"detail": "Entre para continuar."}, status_code=401)
+    escopo = USUARIO_ATIVO.set(usuario)
+    try:
+        return await call_next(request)
+    finally:
+        USUARIO_ATIVO.reset(escopo)
+
+
+@app.exception_handler(RequestValidationError)
+async def erro_entrada(request: Request, exc: RequestValidationError):
+    if request.url.path.startswith("/api/auth/"):
+        return JSONResponse({"detail": "Confira o usuário e a senha."}, status_code=422)
+    return JSONResponse({"detail": "Confira os campos informados."}, status_code=422)
+
+
+class Credenciais(BaseModel):
+    usuario: str = Field(min_length=3, max_length=64, pattern=r"^[a-zA-Z0-9_.-]+$")
+    senha: str = Field(min_length=10, max_length=128)
+
+
+@app.post("/api/auth/registro", status_code=201)
+def registrar(payload: Credenciais):
+    usuario = payload.usuario.lower()
+    if not autenticacao().register(usuario, payload.senha):
+        raise HTTPException(409, "Esse nome de usuário já está em uso.")
+    return {"usuario": usuario}
+
+
+@app.post("/api/auth/login")
+def entrar(payload: Credenciais, request: Request, response: Response):
+    usuario = payload.usuario.lower()
+    token = autenticacao().login(usuario, payload.senha)
+    if token is None:
+        raise HTTPException(401, "Usuário ou senha inválidos.")
+    response.set_cookie(
+        COOKIE_NAME, token, max_age=SESSION_SECONDS, httponly=True,
+        samesite="strict", secure=request.url.scheme == "https",
+    )
+    return {"usuario": usuario}
+
+
+@app.get("/api/auth/sessao")
+def sessao(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    return {"usuario": autenticacao().user_for(token) if token else None}
+
+
+@app.post("/api/auth/logout", status_code=204)
+def sair(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    autenticacao().logout(token)
+    response = Response(status_code=204)
+    response.delete_cookie(COOKIE_NAME)
+    return response
 logger_gemini = logging.getLogger("vlab.gemini")
 logger_gemini.setLevel(logging.INFO)
 if not logger_gemini.hasHandlers():
@@ -40,7 +123,12 @@ class GeracaoInput(BaseModel):
 
 
 def novo_historico():
-    return JsonStorageAdapter(CATALOGOS, diretorio_dados(RAIZ / "data") / "runs")
+    pasta = diretorio_dados(RAIZ / "data")
+    usuario = USUARIO_ATIVO.get()
+    if usuario is not None:
+        conta = sha256(usuario.encode("utf-8")).hexdigest()
+        pasta = pasta / "contas" / conta
+    return JsonStorageAdapter(CATALOGOS, pasta / "runs")
 
 
 @app.get("/api/saude")
