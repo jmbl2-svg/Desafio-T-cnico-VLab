@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from backend.domain.models import PerfilCliente, Ticket
-from backend.domain.rules import validar_resolucao
+from backend.domain.rules import validar_saida
 
 
 class JsonStorageAdapter:
@@ -26,8 +26,8 @@ class JsonStorageAdapter:
 
         return [Ticket(**item) for item in dados]
 
-    def salvar_execucao(self, perfil, relato, saida):
-        validar_resolucao(saida)
+    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao"):
+        validar_saida(tipo, saida)
         self.pasta_execucoes.mkdir(parents=True, exist_ok=True)
 
         while True:
@@ -38,6 +38,7 @@ class JsonStorageAdapter:
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 "perfil": perfil.to_dict(),
                 "ticket": relato,
+                "tipo": tipo,
                 "saida": saida,
             }
             try:

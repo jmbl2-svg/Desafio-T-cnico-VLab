@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from backend.adapters.json_storage import JsonStorageAdapter
@@ -59,8 +60,8 @@ def escolher_relato(tickets):
     return None
 
 
-def montar_prompt(perfil, relato):
-    return renderizar_prompt(PASTA_PROMPTS, perfil, relato)
+def montar_prompt(perfil, relato, tipo="resolucao"):
+    return renderizar_prompt(PASTA_PROMPTS, perfil, relato, tipo)
 
 
 def salvar_execucao(perfil, relato, saida):
@@ -78,19 +79,27 @@ def main():
     if relato is None:
         return
 
-    prompt = montar_prompt(perfil, relato)
-    print("\nPrompt de resolução (demonstração offline):")
+    tipo = input("Tipo (resolucao, diagnostico) [resolucao]: ").strip().lower() or "resolucao"
+    if tipo not in ("resolucao", "diagnostico"):
+        print("Tipo de conteúdo inválido.")
+        return
+
+    prompt = montar_prompt(perfil, relato, tipo)
+    print("\nPrompt (demonstração offline):")
     print(prompt)
 
     print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
     geracao = criar_geracao(PASTA_CATALOGOS, PASTA_EXECUCOES, PASTA_PROMPTS)
-    saida, caminho = geracao.executar(perfil, relato)
+    saida, caminho = geracao.executar(perfil, relato, tipo)
 
-    for passo in saida["passos"]:
-        print(f"\nPasso {passo['ordem']}: {passo['acao']}")
-        print(f"O que observar: {passo['sinal_esperado']}")
-        print(f"Se não funcionar: {passo['se_falhar']}")
+    if tipo == "resolucao":
+        for passo in saida["passos"]:
+            print(f"\nPasso {passo['ordem']}: {passo['acao']}")
+            print(f"O que observar: {passo['sinal_esperado']}")
+            print(f"Se não funcionar: {passo['se_falhar']}")
+    else:
+        print(json.dumps(saida, ensure_ascii=False, indent=2))
 
     print(f"\nAtendimento salvo em: {caminho}")
 

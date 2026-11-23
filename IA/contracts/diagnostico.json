@@ -1,0 +1,24 @@
+{
+  "title": "Resposta de diagnostico",
+  "type": "object",
+  "required": [
+    "hipoteses",
+    "evidencias",
+    "dados_faltantes",
+    "conclusao_provavel"
+  ],
+  "properties": {
+    "hipoteses": {
+      "type": "array"
+    },
+    "evidencias": {
+      "type": "array"
+    },
+    "dados_faltantes": {
+      "type": "array"
+    },
+    "conclusao_provavel": {
+      "type": "string"
+    }
+  }
+}

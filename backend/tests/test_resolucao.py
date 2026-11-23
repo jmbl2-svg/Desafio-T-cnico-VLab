@@ -45,3 +45,12 @@ def test_impede_gravacao_de_resolucao_sem_passos(tmp_path):
         armazenamento.salvar_execucao(perfil, "Arquivo não aparece.", {"passos": []})
 
     assert not pasta_execucoes.exists()
+
+
+def test_gera_e_valida_diagnostico():
+    from backend.adapters.llm_provider import FakeGeradorLLM
+    from backend.domain.rules import validar_saida
+
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    saida = FakeGeradorLLM().gerar("prompt", perfil, "Falha relatada.", "diagnostico")
+    validar_saida("diagnostico", saida)

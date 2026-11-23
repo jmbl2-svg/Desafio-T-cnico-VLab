@@ -6,13 +6,13 @@ from backend.domain.models import PerfilCliente
 
 def test_caso_de_uso_envia_prompt_ao_gerador_e_grava():
     class Gerador:
-        def gerar(self, prompt, perfil, relato):
+        def gerar(self, prompt, perfil, relato, tipo="resolucao"):
             assert perfil.id == "0001"
             assert relato in prompt
             return {"passos": []}
 
     class Historico:
-        def salvar_execucao(self, perfil, relato, saida):
+        def salvar_execucao(self, perfil, relato, saida, tipo="resolucao"):
             assert saida == {"passos": []}
             return Path("teste.json")
 

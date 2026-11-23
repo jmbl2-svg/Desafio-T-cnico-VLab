@@ -1,10 +1,10 @@
 from backend.application.ports import GeradorLLMPort, HistoricoPort
 
 
-def montar_prompt(pasta_prompts, perfil, relato):
+def montar_prompt(pasta_prompts, perfil, relato, tipo="resolucao"):
     pasta = pasta_prompts / "v1"
     base = (pasta / "base.txt").read_text(encoding="utf-8")
-    estrategia = (pasta / "resolucao.txt").read_text(encoding="utf-8")
+    estrategia = (pasta / f"{tipo}.txt").read_text(encoding="utf-8")
     contexto = base.format(
         nome=perfil.nome,
         perfil_id=perfil.id,
@@ -22,8 +22,8 @@ class GerarRespostaUseCase:
         self.historico = historico
         self.pasta_prompts = pasta_prompts
 
-    def executar(self, perfil, relato):
-        prompt = montar_prompt(self.pasta_prompts, perfil, relato)
-        saida = self.gerador.gerar(prompt, perfil, relato)
-        caminho = self.historico.salvar_execucao(perfil, relato, saida)
+    def executar(self, perfil, relato, tipo="resolucao"):
+        prompt = montar_prompt(self.pasta_prompts, perfil, relato, tipo)
+        saida = self.gerador.gerar(prompt, perfil, relato, tipo)
+        caminho = self.historico.salvar_execucao(perfil, relato, saida, tipo)
         return saida, caminho
