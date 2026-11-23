@@ -1,61 +1,9 @@
 """Provedor determinístico para a demonstração offline."""
 
-import json
-
-
-def orientar(perfil):
-    verificacoes = {
-        "leigo": (
-            "Volte à tela onde o problema apareceu e observe o que acontece.",
-            "Você consegue dizer se o problema apareceu de novo.",
-            "Isso ajuda a descobrir em qual tela o problema começa.",
-        ),
-        "intermediario": (
-            "Anote a etapa, o horário e a mensagem exibida, se houver.",
-            "Você consegue indicar em qual etapa a falha ocorreu.",
-            "Esses dados ajudam a identificar se o problema se repete.",
-        ),
-        "avancado": (
-            "Correlacione o horário da falha com o registro disponível.",
-            "Você identifica um evento que coincide com a ocorrência relatada.",
-            "A comparação ajuda a localizar a etapa em que o processo falhou.",
-        ),
-    }
-
-    retornos = {
-        "chat": "Conte aqui no chat o que apareceu na tela.",
-        "email": "Responda ao e-mail com a etapa e o horário observados.",
-        "telefone": "Descreva em voz alta o último estado que conseguiu confirmar.",
-    }
-
-    acao, sinal, motivo = verificacoes[perfil.nivel]
-    alternativa = retornos[perfil.canal]
-
-    if perfil.estilo == "didatico":
-        acao = f"{acao} Por que fazer isso? {motivo}"
-    elif perfil.estilo == "detalhado":
-        sinal = f"{sinal} Registre também o que aconteceu imediatamente antes."
-
-    return {
-        "passos": [
-            {
-                "ordem": 1,
-                "acao": acao,
-                "sinal_esperado": sinal,
-                "se_falhar": alternativa,
-            }
-        ]
-    }
+from backend.adapters.offline_demo import gerar_demonstracao
+from backend.adapters.offline_demo import orientar as orientar
 
 
 class FakeGeradorLLM:
     def gerar(self, prompt, perfil, relato, tipo="resolucao", versao="v1"):
-        if tipo == "diagnostico":
-            saida = json.loads("{\"hipoteses\":[\"A falha pode depender da etapa em que ocorre.\"],\"evidencias\":[\"Relato recebido para análise.\"],\"dados_faltantes\":[\"Qual mensagem apareceu na tela?\"],\"conclusao_provavel\":\"A causa precisa ser confirmada.\"}")
-            saida["evidencias"] = [relato]
-            return saida
-        if tipo == "perguntas":
-            return json.loads("{\"itens\":[{\"prioridade\":1,\"pergunta\":\"O que aparece na tela?\",\"decisao_afetada\":\"Define a etapa a investigar.\"}]}")
-        if tipo == "fluxo":
-            return json.loads("{\"inicio\":\"verificar\",\"nos\":[{\"id\":\"verificar\",\"condicao\":\"A falha se repete?\",\"destinos\":{\"sim\":\"coletar\",\"nao\":\"acompanhar\"}},{\"id\":\"coletar\",\"acao_terminal\":\"Registre a etapa e a mensagem.\"},{\"id\":\"acompanhar\",\"acao_terminal\":\"Informe quando a falha voltar.\"}],\"ascii_diagram\":\"[Verificar] -> Sim: coletar | Não: acompanhar\"}")
-        return orientar(perfil)
+        return gerar_demonstracao(perfil, relato, tipo, versao)

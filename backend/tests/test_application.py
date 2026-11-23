@@ -20,3 +20,21 @@ def test_caso_de_uso_envia_prompt_ao_gerador_e_grava():
     caso = GerarRespostaUseCase(Gerador(), Historico(), pasta)
     perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
     assert caso.executar(perfil, "Arquivo ausente.") == ({"passos": []}, Path("teste.json"))
+
+
+def test_simulacao_muda_por_tipo_versao_e_nivel():
+    from backend.adapters.llm_provider import FakeGeradorLLM
+    from backend.domain.rules import validar_saida
+
+    gerador = FakeGeradorLLM()
+    maria = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    marcos = PerfilCliente("0004", "Marcos", "avancado", "didatico", "email")
+    for tipo in ("resolucao", "diagnostico", "perguntas", "fluxo"):
+        args = ("prompt", maria, "Arquivo ausente.", tipo)
+        v1 = gerador.gerar(*args, "v1")
+        v2 = gerador.gerar(*args, "v2")
+        avancado = gerador.gerar("prompt", marcos, "Arquivo ausente.", tipo, "v2")
+        assert v1 != v2
+        assert v2 != avancado
+        for resposta in (v1, v2, avancado):
+            validar_saida(tipo, resposta)
