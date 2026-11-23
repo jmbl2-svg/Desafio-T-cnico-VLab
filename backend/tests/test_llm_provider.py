@@ -18,3 +18,33 @@ def test_gemini_envia_chave_no_cabecalho_e_registra_modelo(monkeypatch):
     resposta = provider.gerar("prompt", None, "relato")
     assert resposta.modelo == "gemini-efetivo"
     assert resposta.saida == {"passos": []}
+
+
+def test_fallback_pos_timeout_e_resposta_invalida():
+    from backend.adapters.offline_demo import orientar
+    from backend.domain.models import PerfilCliente, RespostaModelo
+
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    chamadas = []
+
+    class Modelo:
+        parametros = {}
+
+        def __init__(self, modelo, resposta):
+            self.modelo = modelo
+            self.resposta = resposta
+
+        def gerar(self, *_):
+            chamadas.append(self.modelo)
+            if isinstance(self.resposta, Exception):
+                raise self.resposta
+            return RespostaModelo(self.resposta, self.modelo)
+
+    cadeia = llm_provider.GeminiFallback([
+        Modelo("primario", llm_provider.ErroProvedor("Tempo limite excedido.")),
+        Modelo("secundario", {"passos": []}),
+        Modelo("terciario", orientar(perfil)),
+    ])
+    resposta = cadeia.gerar("prompt", perfil, "relato")
+    assert resposta.modelo == "terciario"
+    assert chamadas == ["primario", "secundario", "terciario"]

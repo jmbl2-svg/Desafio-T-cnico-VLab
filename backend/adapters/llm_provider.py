@@ -1,11 +1,14 @@
 """Provedor determinístico para a demonstração offline."""
 
 import json
+import logging
+import time
 import httpx
 
 from backend.adapters.offline_demo import gerar_demonstracao
 from backend.adapters.offline_demo import orientar as orientar
 from backend.domain.models import RespostaModelo
+from backend.domain.rules import validar_saida
 
 
 class FakeGeradorLLM:
@@ -62,3 +65,36 @@ class GeminiGeradorLLM:
             raise ErroProvedor("Falha de rede na comunicação com Gemini.") from erro
         except (AttributeError, IndexError, KeyError, TypeError, ValueError) as erro:
             raise ErroProvedor("Gemini devolveu uma resposta inválida.") from erro
+
+
+class LLMIndisponivel(ErroProvedor):
+    """A cadeia de geração não produziu uma resposta válida."""
+
+
+class GeminiFallback:
+    provedor = "gemini"
+
+    def __init__(self, geradores):
+        self.geradores = tuple(geradores)
+        if not self.geradores:
+            raise ErroProvedor("Configure ao menos um modelo Gemini.")
+        self.modelo = self.geradores[0].modelo
+        self.parametros = self.geradores[0].parametros
+        self.identidade_cache = ",".join(g.modelo for g in self.geradores)
+
+    def gerar(self, prompt, perfil, relato, tipo="resolucao", versao="v1"):
+        logger = logging.getLogger("vlab.gemini")
+        for gerador in self.geradores:
+            inicio = time.monotonic()
+            logger.info("Gemini: tentativa com %s", gerador.modelo)
+            try:
+                resposta = gerador.gerar(prompt, perfil, relato, tipo, versao)
+                validar_saida(tipo, resposta.saida)
+            except ErroProvedor as erro:
+                logger.warning("Gemini: %s falhou: %s", gerador.modelo, erro)
+            except ValueError:
+                logger.warning("Gemini: %s retornou saída fora do contrato.", gerador.modelo)
+            else:
+                logger.info("Gemini: %s respondeu em %.2fs", resposta.modelo, time.monotonic()-inicio)
+                return resposta
+        raise LLMIndisponivel("O serviço está temporariamente indisponível. Tente novamente mais tarde.")

@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 from pathlib import Path
 
 from backend.adapters.json_storage import JsonStorageAdapter
@@ -70,6 +71,7 @@ def salvar_execucao(perfil, relato, saida):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser(description="Assistente de suporte técnico")
     parser.add_argument("--sem-cache", action="store_true", help="Forçar geração nova")
     args = parser.parse_args()
