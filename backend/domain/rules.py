@@ -118,3 +118,25 @@ def validar_par(primeira, segunda):
         raise ValueError("Mantenha perfil, ticket, tipo, provedor, modelo e parâmetros iguais.")
     if {primeira.get("versao"), segunda.get("versao")} != {"v1", "v2"}:
         raise ValueError("Compare uma execução v1 com uma v2.")
+
+
+CRITERIOS = ("clarity", "customer_fit", "actionability")
+
+
+def validar_rubrica(run_ids, avaliador, notas, conclusao):
+    if not isinstance(avaliador, str) or not avaliador.strip():
+        raise ValueError("Informe o nome de quem avaliou.")
+    if not isinstance(conclusao, str) or not conclusao.strip():
+        raise ValueError("Informe a conclusão da comparação.")
+    if not isinstance(notas, dict) or set(notas) != set(run_ids):
+        raise ValueError("Avalie cada uma das duas execuções.")
+    for run_id in run_ids:
+        itens = notas[run_id]
+        if not isinstance(itens, dict) or set(itens) != set(CRITERIOS):
+            raise ValueError("Preencha clareza, adequação ao cliente e acionabilidade.")
+        for item in itens.values():
+            if not isinstance(item, dict) or type(item.get("nota")) is not int or not 1 <= item["nota"] <= 5:
+                raise ValueError("Cada nota precisa ser inteira e de 1 a 5.")
+            texto = item.get("justificativa")
+            if not isinstance(texto, str) or not texto.strip():
+                raise ValueError("Cada nota precisa de uma justificativa.")

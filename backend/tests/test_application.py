@@ -115,3 +115,18 @@ def test_compara_versoes_com_os_mesmos_controles(tmp_path):
     assert historico.obter_comparacao(par["comparison_id"]) == par
     with pytest.raises(ValueError, match="distintas"):
         comparar_execucoes(historico, primeira.stem, primeira.stem)
+
+
+def test_rubrica_exige_justificativa():
+    import pytest
+    from backend.domain.rules import CRITERIOS, validar_rubrica
+
+    ids = ["111111111111", "222222222222"]
+    notas = {
+        run_id: {c: {"nota": 4, "justificativa": "A resposta orienta a próxima ação."} for c in CRITERIOS}
+        for run_id in ids
+    }
+    validar_rubrica(ids, "Avaliador", notas, "Ambas são compreensíveis.")
+    notas[ids[0]]["clarity"]["justificativa"] = ""
+    with pytest.raises(ValueError, match="justificativa"):
+        validar_rubrica(ids, "Avaliador", notas, "Ambas são compreensíveis.")

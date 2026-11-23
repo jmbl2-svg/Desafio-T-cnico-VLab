@@ -5,7 +5,8 @@ from pathlib import Path
 
 from backend.adapters.json_storage import JsonStorageAdapter
 from backend.adapters.llm_provider import ErroProvedor, orientar as orientar
-from backend.application.use_cases import comparar_execucoes
+from backend.application.use_cases import avaliar_comparacao, comparar_execucoes, exportar_comparacao
+from backend.domain.rules import CRITERIOS
 from backend.application.use_cases import montar_prompt as renderizar_prompt
 from backend.bootstrap import criar_geracao, diretorio_dados
 
@@ -79,7 +80,40 @@ def main():
     comparar = sub.add_parser("comparar", help="Cria uma comparação entre dois atendimentos")
     comparar.add_argument("primeira")
     comparar.add_argument("segunda")
+    avaliar = sub.add_parser("avaliar", help="Avalia uma comparação")
+    avaliar.add_argument("--comparacao", required=True)
+    exportar = sub.add_parser("exportar", help="Exporta os três JSONs")
+    exportar.add_argument("--comparacao", required=True)
+    exportar.add_argument("--destino", default="samples")
     args = parser.parse_args()
+    if args.comando == "avaliar":
+        historico = criar_armazenamento()
+        try:
+            par = historico.obter_comparacao(args.comparacao)
+            if par is None:
+                raise LookupError("Comparação não encontrada.")
+            avaliador = input("Seu nome: ")
+            notas = {}
+            for run_id in par["run_ids"]:
+                print(f"Execução {run_id}")
+                notas[run_id] = {}
+                for criterio in CRITERIOS:
+                    nota = int(input(f"{criterio}: nota de 1 a 5: "))
+                    justificativa = input("Justificativa: ")
+                    notas[run_id][criterio] = {"nota": nota, "justificativa": justificativa}
+            conclusao = input("Conclusão comparativa: ")
+            avaliar_comparacao(historico, args.comparacao, avaliador, notas, conclusao)
+        except (LookupError, ValueError) as erro:
+            parser.exit(1, f"{erro}\n")
+        print("Avaliação registrada.")
+        return
+    if args.comando == "exportar":
+        try:
+            total = exportar_comparacao(criar_armazenamento(), args.comparacao, args.destino)
+        except (LookupError, ValueError) as erro:
+            parser.exit(1, f"{erro}\n")
+        print(f"{total} arquivos exportados.")
+        return
     if args.comando == "comparar":
         try:
             par = comparar_execucoes(criar_armazenamento(), args.primeira, args.segunda)

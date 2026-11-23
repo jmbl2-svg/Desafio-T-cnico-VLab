@@ -1,11 +1,13 @@
+import json
 import secrets
+from pathlib import Path
 from contextlib import nullcontext
 from datetime import datetime, timezone
 from hashlib import sha256
 
 from backend.application.ports import GeradorLLMPort, HistoricoPort, LockPort
 from backend.domain.models import Comparacao, RespostaModelo
-from backend.domain.rules import chave_execucao, validar_par
+from backend.domain.rules import chave_execucao, validar_par, validar_rubrica
 
 
 def _preparar_prompt(pasta_prompts, perfil, relato, tipo="resolucao", versao="v1"):
@@ -85,3 +87,40 @@ def comparar_execucoes(historico, primeira_id, segunda_id):
     ).to_dict()
     historico.salvar_comparacao(comparacao)
     return comparacao
+
+
+def avaliar_comparacao(historico, comparison_id, avaliador, notas, conclusao):
+    comparacao = historico.obter_comparacao(comparison_id)
+    if comparacao is None:
+        raise LookupError("Comparação não encontrada.")
+    validar_rubrica(comparacao["run_ids"], avaliador, notas, conclusao)
+    comparacao["avaliacao"] = {
+        "avaliador": avaliador.strip(), "notas": notas, "conclusao": conclusao.strip(),
+    }
+    comparacao["status"] = "concluida"
+    historico.salvar_comparacao(comparacao)
+    return comparacao
+
+
+def arquivos_exportacao(historico, comparison_id):
+    comparacao = historico.obter_comparacao(comparison_id)
+    if comparacao is None:
+        raise LookupError("Comparação não encontrada.")
+    if comparacao["status"] != "concluida":
+        raise ValueError("Conclua a rubrica antes de exportar.")
+    arquivos = {f"comparisons/{comparison_id}.json": comparacao}
+    for run_id in comparacao["run_ids"]:
+        registro = historico.obter_execucao(run_id)
+        if registro is None:
+            raise LookupError("Uma execução vinculada não foi encontrada.")
+        arquivos[f"runs/{run_id}.json"] = registro
+    return arquivos
+
+
+def exportar_comparacao(historico, comparison_id, destino):
+    arquivos = arquivos_exportacao(historico, comparison_id)
+    for nome, dados in arquivos.items():
+        caminho = Path(destino) / nome
+        caminho.parent.mkdir(parents=True, exist_ok=True)
+        caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+    return len(arquivos)
