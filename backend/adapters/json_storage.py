@@ -1,5 +1,7 @@
 import json
+import os
 import secrets
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -54,10 +56,23 @@ class JsonStorageAdapter:
                 cache_hit=source_run_id is not None, source_run_id=source_run_id,
             ).to_dict()
 
+            temporario = None
             try:
-                with caminho.open("x", encoding="utf-8") as arquivo:
+                with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", dir=self.pasta_execucoes,
+                    prefix=".execucao-", delete=False,
+                ) as arquivo:
+                    temporario = Path(arquivo.name)
                     json.dump(registro, arquivo, ensure_ascii=False, indent=2)
+                    arquivo.flush()
+                    os.fsync(arquivo.fileno())
+
+                # A publicação por link é atômica e preserva o destino em caso de colisão.
+                os.link(temporario, caminho)
             except FileExistsError:
                 continue
+            finally:
+                if temporario is not None:
+                    temporario.unlink(missing_ok=True)
 
             return caminho

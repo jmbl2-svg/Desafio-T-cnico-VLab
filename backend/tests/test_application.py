@@ -62,3 +62,19 @@ def test_cache_reutiliza_apenas_entradas_equivalentes(tmp_path):
     assert cached["source_run_id"] == origem.stem
     for caminho in (origem, forcada, nova_versao):
         assert not json.loads(caminho.read_text(encoding="utf-8"))["cache_hit"]
+
+
+def test_gravacao_preserva_execucao_em_caso_de_colisao(tmp_path, monkeypatch):
+    from backend.adapters import json_storage
+    from backend.adapters.offline_demo import orientar
+
+    numeros = iter([1, 1, 2])
+    monkeypatch.setattr(json_storage.secrets, "randbelow", lambda _: next(numeros))
+    armazenamento = json_storage.JsonStorageAdapter(tmp_path, tmp_path / "runs")
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    saida = orientar(perfil)
+    primeiro = armazenamento.salvar_execucao(perfil, "Primeiro.", saida)
+    segundo = armazenamento.salvar_execucao(perfil, "Segundo.", saida)
+    assert segundo != primeiro
+    assert "Primeiro." in primeiro.read_text(encoding="utf-8")
+    assert set(primeiro.parent.iterdir()) == {primeiro, segundo}
