@@ -1,0 +1,12 @@
+{
+  "hipoteses": [
+    "A falha pode depender da etapa em que ocorre."
+  ],
+  "evidencias": [
+    "Relato recebido para análise."
+  ],
+  "dados_faltantes": [
+    "Qual mensagem apareceu na tela?"
+  ],
+  "conclusao_provavel": "A causa precisa ser confirmada."
+}

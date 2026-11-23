@@ -1,0 +1,10 @@
+{
+  "passos": [
+    {
+      "ordem": 1,
+      "acao": "Confira a lista de arquivos enviados.",
+      "sinal_esperado": "O nome do arquivo aparece na lista.",
+      "se_falhar": "Informe o status no chat."
+    }
+  ]
+}

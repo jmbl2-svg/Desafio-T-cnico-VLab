@@ -1,0 +1,9 @@
+{
+  "itens": [
+    {
+      "prioridade": 1,
+      "pergunta": "O que aparece na tela?",
+      "decisao_afetada": "Define a etapa a investigar."
+    }
+  ]
+}
