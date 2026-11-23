@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from backend.adapters.file_lock import FileLock
 from backend.adapters.json_storage import JsonStorageAdapter
-from backend.adapters.llm_provider import ErroProvedor, FakeGeradorLLM, GeminiFallback, GeminiGeradorLLM
+from backend.adapters.llm_provider import ErroProvedor, FakeGeradorLLM, GeminiFallback, GeminiGeradorLLM, OpenAIGeradorLLM
 from backend.application.use_cases import GerarRespostaUseCase
 
 
@@ -30,7 +30,14 @@ def criar_provedor():
             )
             for modelo in modelos
         )
-    raise ErroProvedor("Provedor desconhecido. Use fake ou gemini.")
+    if provedor == "openai":
+        return OpenAIGeradorLLM(
+            os.getenv("LLM_API_KEY"),
+            os.getenv("LLM_MODEL") or "gpt-4o-mini",
+            float(os.getenv("LLM_TIMEOUT_SECONDS", "12")),
+            os.getenv("LLM_BASE_URL"),
+        )
+    raise ErroProvedor("Provedor desconhecido. Use fake, gemini ou openai.")
 
 
 def criar_geracao(pasta_catalogos, pasta_execucoes, pasta_prompts):

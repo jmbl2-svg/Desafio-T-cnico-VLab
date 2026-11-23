@@ -48,3 +48,14 @@ def test_fallback_pos_timeout_e_resposta_invalida():
     resposta = cadeia.gerar("prompt", perfil, "relato")
     assert resposta.modelo == "terciario"
     assert chamadas == ["primario", "secundario", "terciario"]
+
+
+def test_bootstrap_pode_selecionar_openai(monkeypatch):
+    from backend.bootstrap import criar_provedor
+
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("LLM_API_KEY", "chave-de-teste")
+    monkeypatch.setenv("LLM_MODEL", "modelo-de-teste")
+    gerador = criar_provedor()
+    assert gerador.provedor == "openai"
+    assert gerador.modelo == "modelo-de-teste"

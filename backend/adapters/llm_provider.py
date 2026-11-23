@@ -98,3 +98,43 @@ class GeminiFallback:
                 logger.info("Gemini: %s respondeu em %.2fs", resposta.modelo, time.monotonic()-inicio)
                 return resposta
         raise LLMIndisponivel("O serviço está temporariamente indisponível. Tente novamente mais tarde.")
+
+
+class OpenAIGeradorLLM:
+    provedor = "openai"
+    parametros = {"temperature": 0.2, "max_tokens": 2048}
+
+    def __init__(self, chave, modelo="gpt-4o-mini", timeout=12, base_url=None):
+        if not chave:
+            raise ErroProvedor("Configure LLM_API_KEY para usar OpenAI.")
+        self.chave = chave
+        self.modelo = modelo
+        self.timeout = timeout
+        self.base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
+
+    def gerar(self, prompt, perfil, relato, tipo="resolucao", versao="v1"):
+        try:
+            with httpx.Client(timeout=self.timeout) as client:
+                resposta = client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={"Authorization": f"Bearer {self.chave}"},
+                    json={
+                        "model": self.modelo,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "response_format": {"type": "json_object"},
+                        **self.parametros,
+                    },
+                )
+            if not resposta.is_success:
+                raise ErroProvedor(f"OpenAI retornou HTTP {resposta.status_code}.")
+            corpo = resposta.json()
+            saida = json.loads(corpo["choices"][0]["message"]["content"])
+            if not isinstance(saida, dict):
+                raise ValueError("A resposta deve ser um objeto JSON.")
+            return RespostaModelo(saida, corpo.get("model") or self.modelo)
+        except httpx.TimeoutException as erro:
+            raise ErroProvedor("Tempo limite de OpenAI excedido.") from erro
+        except httpx.RequestError as erro:
+            raise ErroProvedor("Falha de rede na comunicação com OpenAI.") from erro
+        except (AttributeError, IndexError, KeyError, TypeError, ValueError) as erro:
+            raise ErroProvedor("OpenAI devolveu uma resposta inválida.") from erro
