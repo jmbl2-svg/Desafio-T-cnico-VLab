@@ -96,3 +96,22 @@ def test_trava_tem_timeout_e_libera_apos_erro(tmp_path):
     with trava.adquirir(chave):
         assert (tmp_path / f"{chave}.lock").is_file()
     assert not list(tmp_path.iterdir())
+
+
+def test_compara_versoes_com_os_mesmos_controles(tmp_path):
+    import pytest
+
+    from backend.adapters.json_storage import JsonStorageAdapter
+    from backend.adapters.llm_provider import FakeGeradorLLM
+    from backend.application.use_cases import comparar_execucoes
+
+    raiz = Path(__file__).resolve().parents[2]
+    historico = JsonStorageAdapter(raiz / "database", tmp_path / "runs")
+    caso = GerarRespostaUseCase(FakeGeradorLLM(), historico, raiz / "IA" / "prompts")
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    _, primeira = caso.executar(perfil, "Arquivo ausente.", versao="v1")
+    _, segunda = caso.executar(perfil, "Arquivo ausente.", versao="v2")
+    par = comparar_execucoes(historico, primeira.stem, segunda.stem)
+    assert historico.obter_comparacao(par["comparison_id"]) == par
+    with pytest.raises(ValueError, match="distintas"):
+        comparar_execucoes(historico, primeira.stem, primeira.stem)

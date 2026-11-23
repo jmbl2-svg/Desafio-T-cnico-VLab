@@ -44,3 +44,15 @@ class Execucao:
 
     def to_dict(self):
         return asdict(self)
+
+
+@dataclass
+class Comparacao:
+    comparison_id: str
+    run_ids: list[str]
+    criada_em: str
+    status: str = "pendente"
+    avaliacao: dict | None = None
+
+    def to_dict(self):
+        return asdict(self)

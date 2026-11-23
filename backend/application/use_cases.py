@@ -1,9 +1,11 @@
+import secrets
 from contextlib import nullcontext
+from datetime import datetime, timezone
 from hashlib import sha256
 
 from backend.application.ports import GeradorLLMPort, HistoricoPort, LockPort
-from backend.domain.models import RespostaModelo
-from backend.domain.rules import chave_execucao
+from backend.domain.models import Comparacao, RespostaModelo
+from backend.domain.rules import chave_execucao, validar_par
 
 
 def _preparar_prompt(pasta_prompts, perfil, relato, tipo="resolucao", versao="v1"):
@@ -68,3 +70,18 @@ class GerarRespostaUseCase:
                 source_run_id=fonte,
             )
             return saida, caminho
+
+
+def comparar_execucoes(historico, primeira_id, segunda_id):
+    primeira = historico.obter_execucao(primeira_id)
+    segunda = historico.obter_execucao(segunda_id)
+    if primeira is None or segunda is None:
+        raise LookupError("Uma das execuções não foi encontrada.")
+    validar_par(primeira, segunda)
+    comparacao = Comparacao(
+        comparison_id=f"comp_{secrets.token_hex(12)}",
+        run_ids=[primeira_id, segunda_id],
+        criada_em=datetime.now(timezone.utc).isoformat(),
+    ).to_dict()
+    historico.salvar_comparacao(comparacao)
+    return comparacao

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import secrets
 import tempfile
 from datetime import datetime, timezone
@@ -13,6 +14,7 @@ class JsonStorageAdapter:
     def __init__(self, pasta_catalogos, pasta_execucoes):
         self.pasta_catalogos = Path(pasta_catalogos)
         self.pasta_execucoes = Path(pasta_execucoes)
+        self.pasta_comparacoes = self.pasta_execucoes.parent / "comparisons"
 
     def listar_perfis(self):
         caminho = self.pasta_catalogos / "profiles.json"
@@ -76,3 +78,38 @@ class JsonStorageAdapter:
                     temporario.unlink(missing_ok=True)
 
             return caminho
+
+
+    def obter_execucao(self, run_id):
+        if not re.fullmatch(r"[0-9]{12}", run_id):
+            raise ValueError("Código de execução inválido.")
+        return self._ler_registro(self.pasta_execucoes / f"{run_id}.json")
+
+    @staticmethod
+    def _ler_registro(caminho):
+        try:
+            return json.loads(caminho.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+
+    def obter_comparacao(self, comparison_id):
+        if not re.fullmatch(r"comp_[0-9a-f]{24}", comparison_id):
+            raise ValueError("Código de comparação inválido.")
+        return self._ler_registro(self.pasta_comparacoes / f"{comparison_id}.json")
+
+    def salvar_comparacao(self, comparacao):
+        self.pasta_comparacoes.mkdir(parents=True, exist_ok=True)
+        destino = self.pasta_comparacoes / f"{comparacao['comparison_id']}.json"
+        temporario = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", dir=self.pasta_comparacoes,
+                prefix=".comparacao-", delete=False,
+            ) as arquivo:
+                temporario = Path(arquivo.name)
+                json.dump(comparacao, arquivo, ensure_ascii=False, indent=2)
+            os.replace(temporario, destino)
+        finally:
+            if temporario is not None:
+                temporario.unlink(missing_ok=True)
+        return destino

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from backend.adapters.json_storage import JsonStorageAdapter
 from backend.adapters.llm_provider import ErroProvedor, orientar as orientar
+from backend.application.use_cases import comparar_execucoes
 from backend.application.use_cases import montar_prompt as renderizar_prompt
 from backend.bootstrap import criar_geracao, diretorio_dados
 
@@ -74,7 +75,18 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser(description="Assistente de suporte técnico")
     parser.add_argument("--sem-cache", action="store_true", help="Forçar geração nova")
+    sub = parser.add_subparsers(dest="comando")
+    comparar = sub.add_parser("comparar", help="Cria uma comparação entre dois atendimentos")
+    comparar.add_argument("primeira")
+    comparar.add_argument("segunda")
     args = parser.parse_args()
+    if args.comando == "comparar":
+        try:
+            par = comparar_execucoes(criar_armazenamento(), args.primeira, args.segunda)
+        except (LookupError, ValueError) as erro:
+            parser.exit(1, f"{erro}\n")
+        print(par["comparison_id"])
+        return
     perfil = escolher_perfil(carregar_perfis())
 
     if perfil is None:

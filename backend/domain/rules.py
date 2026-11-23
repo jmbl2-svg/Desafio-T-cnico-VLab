@@ -106,3 +106,15 @@ def validar_fluxo(saida):
     diagrama = saida.get("ascii_diagram")
     if not isinstance(diagrama, str) or not diagrama.strip():
         raise ValueError("O fluxo precisa de um diagrama.")
+
+
+def validar_par(primeira, segunda):
+    if primeira["run_id"] == segunda["run_id"]:
+        raise ValueError("Selecione duas execuções distintas.")
+    controles = ("perfil", "ticket", "tipo", "provedor", "modelo", "parametros")
+    if any(c not in primeira or c not in segunda for c in controles):
+        raise ValueError("As duas execuções precisam ter metadados completos.")
+    if any(primeira[c] != segunda[c] for c in controles):
+        raise ValueError("Mantenha perfil, ticket, tipo, provedor, modelo e parâmetros iguais.")
+    if {primeira.get("versao"), segunda.get("versao")} != {"v1", "v2"}:
+        raise ValueError("Compare uma execução v1 com uma v2.")
