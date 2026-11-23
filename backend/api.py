@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 
 from backend.adapters.json_storage import JsonStorageAdapter
@@ -139,3 +140,8 @@ def atualizar_avaliacao(comparison_id: str, payload: AvaliacaoInput):
         raise HTTPException(404, str(erro)) from erro
     except ValueError as erro:
         raise HTTPException(422, str(erro)) from erro
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def pagina_inicial():
+    return (RAIZ / "frontend" / "standalone.html").read_text(encoding="utf-8")

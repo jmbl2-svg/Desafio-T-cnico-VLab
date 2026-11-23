@@ -51,3 +51,11 @@ def test_api_compara_e_grava_rubrica(tmp_path, monkeypatch):
     }
     avaliacao = AvaliacaoInput(avaliador="Teste", notas=notas, conclusao="Comparei as duas versões.")
     assert atualizar_avaliacao(par["comparison_id"], avaliacao)["status"] == "concluida"
+
+
+def test_pagina_inicial_exibe_formulario():
+    from backend.api import pagina_inicial
+
+    pagina = pagina_inicial()
+    assert 'id="cenario"' in pagina
+    assert "/api/execucoes" in pagina
