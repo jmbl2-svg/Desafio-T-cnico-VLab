@@ -1,3 +1,12 @@
+import hashlib
+import json
+
+
+def chave_execucao(controles):
+    texto = json.dumps(controles, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
 def validar_saida(tipo, saida):
     if not isinstance(saida, dict):
         raise ValueError("A saída precisa ser um objeto.")

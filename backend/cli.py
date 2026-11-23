@@ -1,3 +1,4 @@
+import argparse
 import json
 from pathlib import Path
 
@@ -69,6 +70,9 @@ def salvar_execucao(perfil, relato, saida):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Assistente de suporte técnico")
+    parser.add_argument("--sem-cache", action="store_true", help="Forçar geração nova")
+    args = parser.parse_args()
     perfil = escolher_perfil(carregar_perfis())
 
     if perfil is None:
@@ -96,7 +100,7 @@ def main():
     print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
     geracao = criar_geracao(PASTA_CATALOGOS, PASTA_EXECUCOES, PASTA_PROMPTS)
-    saida, caminho = geracao.executar(perfil, relato, tipo, versao)
+    saida, caminho = geracao.executar(perfil, relato, tipo, versao, sem_cache=args.sem_cache)
 
     if tipo == "resolucao":
         for passo in saida["passos"]:

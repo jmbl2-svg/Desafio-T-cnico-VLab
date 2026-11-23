@@ -26,9 +26,19 @@ class JsonStorageAdapter:
 
         return [Ticket(**item) for item in dados]
 
+    def buscar_por_chave(self, chave):
+        for caminho in sorted(self.pasta_execucoes.glob("*.json")):
+            try:
+                registro = json.loads(caminho.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if isinstance(registro, dict) and registro.get("input_key") == chave and not registro.get("cache_hit"):
+                return registro
+        return None
+
     def salvar_execucao(
         self, perfil, relato, saida, tipo="resolucao", versao="v1", *,
-        provedor="fake", modelo="fake-support-v1", parametros=None, template_hash=None,
+        provedor="fake", modelo="fake-support-v1", parametros=None, template_hash=None, input_key=None, source_run_id=None,
     ):
         validar_saida(tipo, saida)
         self.pasta_execucoes.mkdir(parents=True, exist_ok=True)
@@ -40,7 +50,8 @@ class JsonStorageAdapter:
                 run_id=run_id, timestamp_utc=datetime.now(timezone.utc).isoformat(),
                 perfil=perfil.to_dict(), ticket=relato, saida=saida, tipo=tipo, versao=versao,
                 provedor=provedor, modelo=modelo, parametros=parametros or {},
-                template_hash=template_hash,
+                template_hash=template_hash, input_key=input_key,
+                cache_hit=source_run_id is not None, source_run_id=source_run_id,
             ).to_dict()
 
             try:

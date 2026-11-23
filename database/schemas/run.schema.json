@@ -59,6 +59,21 @@
         "string",
         "null"
       ]
+    },
+    "input_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cache_hit": {
+      "type": "boolean"
+    },
+    "source_run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

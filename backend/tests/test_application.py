@@ -12,6 +12,9 @@ def test_caso_de_uso_envia_prompt_ao_gerador_e_grava():
             return {"passos": []}
 
     class Historico:
+        def buscar_por_chave(self, chave):
+            return None
+
         def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1", **metadados):
             assert saida == {"passos": []}
             return Path("teste.json")
@@ -38,3 +41,24 @@ def test_simulacao_muda_por_tipo_versao_e_nivel():
         assert v2 != avancado
         for resposta in (v1, v2, avancado):
             validar_saida(tipo, resposta)
+
+
+def test_cache_reutiliza_apenas_entradas_equivalentes(tmp_path):
+    import json
+
+    from backend.adapters.json_storage import JsonStorageAdapter
+    from backend.adapters.llm_provider import FakeGeradorLLM
+
+    raiz = Path(__file__).resolve().parents[2]
+    historico = JsonStorageAdapter(raiz / "database", tmp_path)
+    caso = GerarRespostaUseCase(FakeGeradorLLM(), historico, raiz / "IA" / "prompts")
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    _, origem = caso.executar(perfil, "Arquivo ausente.")
+    _, repeticao = caso.executar(perfil, "Arquivo ausente.")
+    _, forcada = caso.executar(perfil, "Arquivo ausente.", sem_cache=True)
+    _, nova_versao = caso.executar(perfil, "Arquivo ausente.", versao="v2")
+    cached = json.loads(repeticao.read_text(encoding="utf-8"))
+    assert cached["cache_hit"]
+    assert cached["source_run_id"] == origem.stem
+    for caminho in (origem, forcada, nova_versao):
+        assert not json.loads(caminho.read_text(encoding="utf-8"))["cache_hit"]

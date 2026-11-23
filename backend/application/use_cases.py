@@ -1,6 +1,7 @@
 from hashlib import sha256
 
 from backend.application.ports import GeradorLLMPort, HistoricoPort
+from backend.domain.rules import chave_execucao
 
 
 def _preparar_prompt(pasta_prompts, perfil, relato, tipo="resolucao", versao="v1"):
@@ -34,14 +35,28 @@ class GerarRespostaUseCase:
         self.historico = historico
         self.pasta_prompts = pasta_prompts
 
-    def executar(self, perfil, relato, tipo="resolucao", versao="v1"):
+    def executar(self, perfil, relato, tipo="resolucao", versao="v1", sem_cache=False):
         prompt, template_hash = _preparar_prompt(self.pasta_prompts, perfil, relato, tipo, versao)
-        saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+        provedor = getattr(self.gerador, "provedor", "fake")
+        modelo = getattr(self.gerador, "modelo", "fake-support-v1")
+        parametros = getattr(self.gerador, "parametros", {})
+        chave = chave_execucao({
+            "perfil": perfil.to_dict(), "relato": relato, "tipo": tipo, "versao": versao,
+            "template_hash": template_hash, "provedor": provedor,
+            "modelo": getattr(self.gerador, "identidade_cache", modelo),
+            "parametros": parametros,
+        })
+        anterior = None if sem_cache else self.historico.buscar_por_chave(chave)
+        if anterior is None:
+            saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+            fonte = None
+        else:
+            saida = anterior["saida"]
+            fonte = anterior["run_id"]
+            modelo = anterior["modelo"]
         caminho = self.historico.salvar_execucao(
-            perfil, relato, saida, tipo, versao,
-            provedor=getattr(self.gerador, "provedor", "fake"),
-            modelo=getattr(self.gerador, "modelo", "fake-support-v1"),
-            parametros=getattr(self.gerador, "parametros", {}),
-            template_hash=template_hash,
+            perfil, relato, saida, tipo, versao, provedor=provedor, modelo=modelo,
+            parametros=parametros, template_hash=template_hash, input_key=chave,
+            source_run_id=fonte,
         )
         return saida, caminho

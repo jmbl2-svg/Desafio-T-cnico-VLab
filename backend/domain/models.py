@@ -32,6 +32,9 @@ class Execucao:
     modelo: str
     parametros: dict
     template_hash: str | None
+    input_key: str | None = None
+    cache_hit: bool = False
+    source_run_id: str | None = None
 
     def to_dict(self):
         return asdict(self)
