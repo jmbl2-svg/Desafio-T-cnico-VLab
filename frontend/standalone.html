@@ -18,6 +18,9 @@ button { width:max-content; border:0; border-radius:6px; background:var(--acao);
 button:disabled { opacity:.65; cursor:wait; }
 pre { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--texto); }
 #status { margin:0; color:var(--muted); }
+#comparacoes,#notas { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; margin:1rem 0; }
+fieldset { border:1px solid var(--linha); border-radius:8px; min-width:0; display:grid; gap:.5rem; }
+[hidden] { display:none !important; }
 </style>
 </head>
 <body>
@@ -45,8 +48,18 @@ pre { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--texto); }
 </select></label>
 <label>Versão<select name="versao"><option>v1</option><option>v2</option></select></label>
 <button id="gerar">Gerar resposta</button>
+<button type="button" id="comparar">Comparar v1 e v2</button>
 </form>
 <pre id="saida"></pre>
+<div id="dupla" hidden>
+  <div id="comparacoes"></div>
+  <form id="rubrica">
+    <label>Avaliador<input name="avaliador" required maxlength="120"></label>
+    <div id="notas"></div>
+    <label>Conclusão comparativa<textarea name="conclusao" required></textarea></label>
+    <button id="salvar-notas">Salvar rubrica</button>
+  </form>
+</div>
 </section>
 </main>
 <script>
@@ -102,6 +115,91 @@ form.addEventListener("submit", async (e) => {
     informar(erro.message);
   } finally {
     $("gerar").disabled = false;
+  }
+});
+
+const criterios = {
+  clarity: "Clareza",
+  customer_fit: "Adequação ao cliente",
+  actionability: "Acionabilidade",
+};
+let parAtivo;
+
+function montarRubrica(execucao) {
+  const grupo = document.createElement("fieldset");
+  const titulo = document.createElement("legend");
+  titulo.textContent = `${execucao.registro.versao} · ${execucao.run_id}`;
+  grupo.append(titulo);
+  for (const [chave, rotulo] of Object.entries(criterios)) {
+    const base = `${execucao.run_id}:${chave}`;
+    const labelNota = document.createElement("label");
+    labelNota.textContent = `${rotulo} (1 a 5)`;
+    const nota = document.createElement("input");
+    Object.assign(nota, { type:"number", min:"1", max:"5", step:"1", required:true, name:base });
+    labelNota.append(nota);
+    const labelTexto = document.createElement("label");
+    labelTexto.textContent = "Justificativa";
+    const texto = document.createElement("textarea");
+    Object.assign(texto, { required:true, name:base + ":texto", rows:2 });
+    labelTexto.append(texto);
+    grupo.append(labelNota, labelTexto);
+  }
+  return grupo;
+}
+
+$("comparar").addEventListener("click", async () => {
+  $("comparar").disabled = true;
+  $("gerar").disabled = true;
+  $("dupla").hidden = true;
+  informar("Gerando as duas versões...");
+  try {
+    const base = cenario("v1");
+    const v1 = await api("/api/execucoes", "POST", { ...base, sem_cache:true });
+    const v2 = await api("/api/execucoes", "POST", { ...base, versao:"v2", sem_cache:true });
+    parAtivo = await api("/api/comparacoes", "POST", { run_ids:[v1.run_id, v2.run_id] });
+    $("comparacoes").replaceChildren(...[v1,v2].map(execucao => {
+      const cartao = document.createElement("section");
+      const h = document.createElement("h2");
+      const pre = document.createElement("pre");
+      h.textContent = `${execucao.registro.versao} · ${execucao.registro.modelo}`;
+      pre.textContent = JSON.stringify(execucao.saida, null, 2);
+      cartao.append(h,pre);
+      return cartao;
+    }));
+    $("rubrica").reset();
+    $("notas").replaceChildren(...[v1,v2].map(montarRubrica));
+    $("dupla").hidden = false;
+    informar(v1.registro.provedor === "fake" ? "Par criado em modo simulado." : "Par criado. Avalie as respostas.");
+  } catch (erro) {
+    informar(erro.message);
+  } finally {
+    $("comparar").disabled = false;
+    $("gerar").disabled = false;
+  }
+});
+
+$("rubrica").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!parAtivo) return;
+  const campos = new FormData(e.currentTarget);
+  const notas = {};
+  for (const id of parAtivo.run_ids) {
+    notas[id] = {};
+    for (const chave of Object.keys(criterios)) {
+      const base = `${id}:${chave}`;
+      notas[id][chave] = { nota:Number(campos.get(base)), justificativa:campos.get(base + ":texto") };
+    }
+  }
+  $("salvar-notas").disabled = true;
+  try {
+    await api("/api/comparacoes/" + parAtivo.comparison_id + "/avaliacao", "PUT", {
+      avaliador:campos.get("avaliador"), conclusao:campos.get("conclusao"), notas,
+    });
+    informar("Rubrica salva.");
+  } catch (erro) {
+    informar(erro.message);
+  } finally {
+    $("salvar-notas").disabled = false;
   }
 });
 
