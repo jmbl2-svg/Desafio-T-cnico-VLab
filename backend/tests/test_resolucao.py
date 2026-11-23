@@ -54,3 +54,12 @@ def test_gera_e_valida_diagnostico():
     perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
     saida = FakeGeradorLLM().gerar("prompt", perfil, "Falha relatada.", "diagnostico")
     validar_saida("diagnostico", saida)
+
+
+def test_gera_e_valida_perguntas():
+    from backend.adapters.llm_provider import FakeGeradorLLM
+    from backend.domain.rules import validar_saida
+
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    saida = FakeGeradorLLM().gerar("prompt", perfil, "Falha relatada.", "perguntas")
+    validar_saida("perguntas", saida)

@@ -54,4 +54,6 @@ class FakeGeradorLLM:
             saida = json.loads("{\"hipoteses\":[\"A falha pode depender da etapa em que ocorre.\"],\"evidencias\":[\"Relato recebido para análise.\"],\"dados_faltantes\":[\"Qual mensagem apareceu na tela?\"],\"conclusao_provavel\":\"A causa precisa ser confirmada.\"}")
             saida["evidencias"] = [relato]
             return saida
+        if tipo == "perguntas":
+            return json.loads("{\"itens\":[{\"prioridade\":1,\"pergunta\":\"O que aparece na tela?\",\"decisao_afetada\":\"Define a etapa a investigar.\"}]}")
         return orientar(perfil)

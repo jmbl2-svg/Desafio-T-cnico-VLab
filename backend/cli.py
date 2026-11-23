@@ -79,8 +79,8 @@ def main():
     if relato is None:
         return
 
-    tipo = input("Tipo (resolucao, diagnostico) [resolucao]: ").strip().lower() or "resolucao"
-    if tipo not in ("resolucao", "diagnostico"):
+    tipo = input("Tipo (resolucao, diagnostico, perguntas) [resolucao]: ").strip().lower() or "resolucao"
+    if tipo not in ("resolucao", "diagnostico", "perguntas"):
         print("Tipo de conteúdo inválido.")
         return
 

@@ -5,6 +5,8 @@ def validar_saida(tipo, saida):
         validar_resolucao(saida)
     elif tipo == "diagnostico":
         validar_diagnostico(saida)
+    elif tipo == "perguntas":
+        validar_perguntas(saida)
     else:
         raise ValueError(f"Tipo de conteúdo desconhecido: {tipo}")
 
@@ -39,3 +41,15 @@ def validar_diagnostico(saida):
     texto = saida.get("conclusao_provavel")
     if not isinstance(texto, str) or not texto.strip():
         raise ValueError("O diagnóstico precisa de uma conclusão provável.")
+
+
+def validar_perguntas(saida):
+    itens = saida.get("itens")
+    if not isinstance(itens, list) or not itens:
+        raise ValueError("A saída precisa ter perguntas.")
+    for item in itens:
+        if not isinstance(item, dict) or type(item.get("prioridade")) is not int or item["prioridade"] < 1:
+            raise ValueError("A prioridade precisa ser um inteiro positivo.")
+        for campo in ("pergunta", "decisao_afetada"):
+            if not isinstance(item.get(campo), str) or not item[campo].strip():
+                raise ValueError(f"A pergunta precisa preencher '{campo}'.")

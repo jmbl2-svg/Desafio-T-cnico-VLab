@@ -1,0 +1,12 @@
+{
+  "title": "Resposta de perguntas",
+  "type": "object",
+  "required": [
+    "itens"
+  ],
+  "properties": {
+    "itens": {
+      "type": "array"
+    }
+  }
+}

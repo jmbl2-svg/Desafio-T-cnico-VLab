@@ -1,0 +1,13 @@
+Tarefa: gere perguntas para o ticket informado.
+Priorize perguntas cuja resposta muda a próxima ação. Explique qual decisão depende de cada resposta.
+Retorne apenas um objeto JSON com itens; cada item contém prioridade, pergunta e decisao_afetada.
+Exemplo de estrutura:
+{
+  "itens": [
+    {
+      "prioridade": 1,
+      "pergunta": "O que aparece na tela?",
+      "decisao_afetada": "Define a etapa a investigar."
+    }
+  ]
+}
