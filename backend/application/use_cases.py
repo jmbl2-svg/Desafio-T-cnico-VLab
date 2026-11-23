@@ -2,6 +2,7 @@ from contextlib import nullcontext
 from hashlib import sha256
 
 from backend.application.ports import GeradorLLMPort, HistoricoPort, LockPort
+from backend.domain.models import RespostaModelo
 from backend.domain.rules import chave_execucao
 
 
@@ -51,7 +52,11 @@ class GerarRespostaUseCase:
         with self.trava.adquirir(chave) if self.trava else nullcontext():
             anterior = None if sem_cache else self.historico.buscar_por_chave(chave)
             if anterior is None:
-                saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+                gerado = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+                if isinstance(gerado, RespostaModelo):
+                    saida, modelo = gerado.saida, gerado.modelo
+                else:
+                    saida = gerado
                 fonte = None
             else:
                 saida = anterior["saida"]

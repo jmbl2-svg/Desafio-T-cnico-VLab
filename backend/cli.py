@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from backend.adapters.json_storage import JsonStorageAdapter
-from backend.adapters.llm_provider import orientar as orientar
+from backend.adapters.llm_provider import ErroProvedor, orientar as orientar
 from backend.application.use_cases import montar_prompt as renderizar_prompt
 from backend.bootstrap import criar_geracao, diretorio_dados
 
@@ -93,14 +93,15 @@ def main():
         print("Versão inválida. Use v1 ou v2.")
         return
 
-    prompt = montar_prompt(perfil, relato, tipo, versao)
-    print("\nPrompt (demonstração offline):")
-    print(prompt)
-
     print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
-    geracao = criar_geracao(PASTA_CATALOGOS, PASTA_EXECUCOES, PASTA_PROMPTS)
-    saida, caminho = geracao.executar(perfil, relato, tipo, versao, sem_cache=args.sem_cache)
+    try:
+        geracao = criar_geracao(PASTA_CATALOGOS, PASTA_EXECUCOES, PASTA_PROMPTS)
+        saida, caminho = geracao.executar(perfil, relato, tipo, versao, sem_cache=args.sem_cache)
+    except (ErroProvedor, TimeoutError, ValueError) as erro:
+        print(f"Falha na geração: {erro}")
+        return
+    print(f"Provedor: {geracao.gerador.provedor}")
 
     if tipo == "resolucao":
         for passo in saida["passos"]:

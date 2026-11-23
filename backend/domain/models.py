@@ -20,6 +20,12 @@ class Ticket:
     descricao: str
 
 @dataclass
+class RespostaModelo:
+    saida: dict
+    modelo: str
+
+
+@dataclass
 class Execucao:
     run_id: str
     timestamp_utc: str
