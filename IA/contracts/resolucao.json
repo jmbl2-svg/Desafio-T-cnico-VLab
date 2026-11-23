@@ -1,0 +1,40 @@
+{
+  "title": "Resposta de resolução",
+  "type": "object",
+  "required": [
+    "passos"
+  ],
+  "properties": {
+    "passos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "ordem",
+          "acao",
+          "sinal_esperado",
+          "se_falhar"
+        ],
+        "properties": {
+          "ordem": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "acao": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "sinal_esperado": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "se_falhar": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from backend.domain.models import PerfilCliente, Ticket
+from backend.domain.rules import validar_resolucao
 
 
 class JsonStorageAdapter:
@@ -26,6 +27,7 @@ class JsonStorageAdapter:
         return [Ticket(**item) for item in dados]
 
     def salvar_execucao(self, perfil, relato, saida):
+        validar_resolucao(saida)
         self.pasta_execucoes.mkdir(parents=True, exist_ok=True)
 
         while True:
