@@ -1,8 +1,11 @@
 import logging
+import io
+import json
 from contextvars import ContextVar
 from hashlib import sha256
 from pathlib import Path
 from typing import Literal
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -14,7 +17,7 @@ from backend.adapters.json_storage import JsonStorageAdapter
 from backend.adapters.web_auth import COOKIE_NAME, SESSION_SECONDS, WebAuth
 from backend.adapters.llm_provider import ErroProvedor, LLMIndisponivel
 from backend.bootstrap import criar_geracao, diretorio_dados
-from backend.application.use_cases import avaliar_comparacao, comparar_execucoes
+from backend.application.use_cases import arquivos_exportacao, avaliar_comparacao, comparar_execucoes
 
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -233,3 +236,21 @@ def atualizar_avaliacao(comparison_id: str, payload: AvaliacaoInput):
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def pagina_inicial():
     return (RAIZ / "frontend" / "standalone.html").read_text(encoding="utf-8")
+
+
+@app.get("/api/comparacoes/{comparison_id}/exportar")
+def baixar_comparacao(comparison_id: str):
+    try:
+        arquivos = arquivos_exportacao(novo_historico(), comparison_id)
+    except LookupError as erro:
+        raise HTTPException(404, str(erro)) from erro
+    except ValueError as erro:
+        raise HTTPException(422, str(erro)) from erro
+    buffer = io.BytesIO()
+    with ZipFile(buffer, "w", compression=ZIP_DEFLATED) as pacote:
+        for nome, dados in arquivos.items():
+            pacote.writestr(nome, json.dumps(dados, ensure_ascii=False, indent=2))
+    return Response(
+        buffer.getvalue(), media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{comparison_id}.zip"'},
+    )

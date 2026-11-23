@@ -59,6 +59,7 @@ fieldset { border:1px solid var(--linha); border-radius:8px; min-width:0; displa
     <label>Conclusão comparativa<textarea name="conclusao" required></textarea></label>
     <button id="salvar-notas">Salvar rubrica</button>
   </form>
+  <a id="download" hidden>Baixar comparação (.zip)</a>
 </div>
 </section>
 </main>
@@ -151,6 +152,7 @@ $("comparar").addEventListener("click", async () => {
   $("comparar").disabled = true;
   $("gerar").disabled = true;
   $("dupla").hidden = true;
+  $("download").hidden = true;
   informar("Gerando as duas versões...");
   try {
     const base = cenario("v1");
@@ -195,6 +197,8 @@ $("rubrica").addEventListener("submit", async (e) => {
     await api("/api/comparacoes/" + parAtivo.comparison_id + "/avaliacao", "PUT", {
       avaliador:campos.get("avaliador"), conclusao:campos.get("conclusao"), notas,
     });
+    $("download").href = "/api/comparacoes/" + parAtivo.comparison_id + "/exportar";
+    $("download").hidden = false;
     informar("Rubrica salva.");
   } catch (erro) {
     informar(erro.message);
