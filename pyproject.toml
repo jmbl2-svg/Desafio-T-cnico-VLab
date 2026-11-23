@@ -1,0 +1,16 @@
+[project]
+name = "vlab-suporte"
+version = "1.0.0"
+description = "Assistente de suporte técnico com engenharia de prompt"
+requires-python = ">=3.11"
+authors = [{name = "Jonas"}]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
