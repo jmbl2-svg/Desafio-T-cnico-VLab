@@ -1,7 +1,17 @@
 [
   {
     "id": "pasta",
-    "titulo": "Pasta compartilhada",
-    "descricao": "O envio foi confirmado, mas minha colega não encontra o arquivo na pasta compartilhada."
+    "titulo": "Arquivo enviado não aparece na pasta compartilhada",
+    "descricao": "O aplicativo diz que o arquivo foi enviado, mas ele não aparece na pasta compartilhada. A minha colega consegue ver outros arquivos nessa pasta."
+  },
+  {
+    "id": "sem_colega",
+    "titulo": "Arquivo enviado ausente (sem menção de colegas)",
+    "descricao": "O aplicativo diz que o arquivo foi enviado, mas ele não aparece na pasta compartilhada."
+  },
+  {
+    "id": "conferi_destino",
+    "titulo": "Arquivo ausente com verificação prévia de destino",
+    "descricao": "O aplicativo diz que o arquivo foi enviado, mas ele não aparece na pasta compartilhada. Já conferi a pasta de destino."
   }
 ]
