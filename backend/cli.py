@@ -5,13 +5,13 @@ from pathlib import Path
 from backend.adapters.json_storage import JsonStorageAdapter
 from backend.adapters.llm_provider import orientar as orientar
 from backend.application.use_cases import montar_prompt as renderizar_prompt
-from backend.bootstrap import criar_geracao
+from backend.bootstrap import criar_geracao, diretorio_dados
 
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_CATALOGOS = RAIZ / "database"
 PASTA_PROMPTS = RAIZ / "IA" / "prompts"
-PASTA_EXECUCOES = RAIZ / "data" / "runs"
+PASTA_EXECUCOES = diretorio_dados(RAIZ / "data") / "runs"
 
 
 def criar_armazenamento():
