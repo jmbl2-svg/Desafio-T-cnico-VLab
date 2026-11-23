@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "nivel": {
+      "enum": [
+        "leigo",
+        "intermediario",
+        "avancado"
+      ]
+    },
+    "estilo": {
+      "enum": [
+        "direto",
+        "detalhado",
+        "didatico"
+      ]
+    },
+    "canal": {
+      "enum": [
+        "chat",
+        "email",
+        "telefone"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "nome",
+    "nivel",
+    "estilo",
+    "canal"
+  ]
+}
