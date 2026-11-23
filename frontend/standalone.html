@@ -1,265 +1,617 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Suporte técnico | V-LAB</title>
-<style>
-:root { color-scheme: light; --fundo:#eaf0f5; --painel:#fff; --texto:#182b3c; --muted:#456075; --linha:#c4d3df; --acao:#086b59; }
-:root[data-tema="escuro"] {
-  color-scheme:dark; --fundo:#11202d; --painel:#172d3d; --texto:#e2f0f8;
-  --muted:#b6cddc; --linha:#496176; --acao:#087c67;
-}
-a { color:var(--texto); }
-* { box-sizing:border-box; }
-body { font: 16px system-ui, sans-serif; background:var(--fundo); color:var(--texto); margin:0; }
-main { max-width:980px; margin:2rem auto; padding:0 1rem; display:grid; gap:1rem; }
-h1,h2 { margin:0 0 .8rem; }
-section { background:var(--painel); border:1px solid var(--linha); border-radius:12px; padding:1rem; }
-form { display:grid; gap:.65rem; }
-label { display:grid; gap:.25rem; }
-input,select,textarea { width:100%; font:inherit; background:var(--painel); color:var(--texto); border:1px solid var(--linha); border-radius:6px; padding:.55rem; }
-button { width:max-content; border:0; border-radius:6px; background:var(--acao); color:#fff; padding:.65rem 1rem; font:inherit; cursor:pointer; }
-button:disabled { opacity:.65; cursor:wait; }
-pre { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--texto); }
-#status { margin:0; color:var(--muted); }
-#comparacoes,#notas { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; margin:1rem 0; }
-fieldset { border:1px solid var(--linha); border-radius:8px; min-width:0; display:grid; gap:.5rem; }
-[hidden] { display:none !important; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V-LAB | Assistente de Suporte Técnico com IA</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code-bg: #090d16;
+    }
+    :root { color-scheme: dark; --field: #0b1120; --accent: #60a5fa; --info: #38bdf8; --positive: #34d399; --negative: #f87171; }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #eef2f7; --card-bg: #fff; --card-border: #cbd5e1;
+      --text-main: #172033; --text-muted: #475569; --code-bg: #f1f5f9;
+      --primary: #1d4ed8; --primary-hover: #1e40af; --field: #fff;
+      --warning: #92400e; --accent: #1d4ed8; --info: #075985; --positive: #047857; --negative: #b91c1c;
+    }
+    [hidden] { display: none !important; }
+    .auth-card { max-width: 420px; margin: 3rem auto; }
+    .download { display: inline-block; margin-top: 1rem; color: var(--accent); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { margin-bottom: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--positive); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-cache { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 1.5rem; }
+    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; }
+
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; }
+    select, textarea, input { width: 100%; background: var(--field); border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 0.6rem 0.8rem; color: var(--text-main); font-size: 0.9rem; transition: border-color 0.2s; }
+    select:focus, textarea:focus, input:focus { outline: none; border-color: var(--primary); }
+    .profile-info { font-size: 0.8rem; color: var(--info); background: rgba(56, 189, 248, 0.1); padding: 0.6rem; border-radius: 0.4rem; margin-top: 0.4rem; border-left: 3px solid #38bdf8; }
+
+    .btn-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    button { flex: 1; padding: 0.75rem 1rem; border-radius: 0.5rem; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #334155; color: #f1f5f9; }
+    .btn-secondary:hover { background: #475569; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    @media (max-width: 800px) { .comparison-grid { grid-template-columns: 1fr; } }
+
+    .output-box { background: var(--code-bg); border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 1.2rem; font-size: 0.88rem; line-height: 1.5; }
+    .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid #1e293b; }
+    .step-item { background: var(--card-bg); border-left: 3px solid #3b82f6; padding: 0.8rem; border-radius: 0.3rem; margin-bottom: 0.8rem; }
+    .step-num { font-weight: 700; color: var(--accent); margin-bottom: 0.2rem; }
+    .expected-signal { color: var(--positive); font-size: 0.85rem; margin-top: 0.4rem; }
+    .fallback-action { color: var(--negative); font-size: 0.85rem; margin-top: 0.2rem; }
+    .ascii-art { font-family: monospace; white-space: pre; background: var(--code-bg); padding: 1rem; border-radius: 0.4rem; color: var(--info); overflow-x: auto; }
+
+    .eval-section { margin-top: 1.5rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; }
+    .score-selector { display: flex; gap: 0.5rem; margin-top: 0.3rem; margin-bottom: 0.5rem; }
+    .score-btn { width: 36px; height: 36px; border-radius: 0.3rem; border: 1px solid var(--card-border); background: var(--field); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; }
+    .score-btn.active { background: var(--primary); border-color: var(--primary); }
+
+    .alert { padding: 0.8rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.88rem; }
+    .alert-error { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--negative); }
+    .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--positive); }
+  </style>
 </head>
 <body>
-<main>
-<header><h1>Assistente de suporte V-LAB</h1><button id="tema" type="button">Alternar tema</button> <button id="sair" hidden>Sair</button></header>
-<p id="status" role="status" aria-live="polite"></p>
-<section id="conta" hidden>
-<h2>Acesso</h2>
-<form id="credenciais">
-<label>Usuário<input name="usuario" autocomplete="username" required minlength="3" maxlength="64"></label>
-<label>Senha<input name="senha" type="password" autocomplete="current-password" required minlength="10" maxlength="128"></label>
-<button name="acao" value="login">Entrar</button>
-<button name="acao" value="registro">Criar conta e entrar</button>
-</form>
-</section>
-<section id="painel" hidden>
-<h2>Atendimento</h2>
-<form id="cenario">
-<label>Perfil<select name="perfil" required></select></label>
-<label>Ticket<select name="ticketId"></select></label>
-<label>Relato livre<textarea name="ticket" rows="3" maxlength="12000"></textarea></label>
-<label>Tipo<select name="tipo">
-<option value="resolucao">Resolução</option><option value="diagnostico">Diagnóstico</option>
-<option value="perguntas">Perguntas</option><option value="fluxo">Fluxo</option>
-</select></label>
-<label>Versão<select name="versao"><option>v1</option><option>v2</option></select></label>
-<button id="gerar">Gerar resposta</button>
-<button type="button" id="comparar">Comparar v1 e v2</button>
-</form>
-<pre id="saida"></pre>
-<div id="dupla" hidden>
-  <div id="comparacoes"></div>
-  <form id="rubrica">
-    <label>Avaliador<input name="avaliador" required maxlength="120"></label>
-    <div id="notas"></div>
-    <label>Conclusão comparativa<textarea name="conclusao" required></textarea></label>
-    <button id="salvar-notas">Salvar rubrica</button>
-  </form>
-  <a id="download" hidden>Baixar comparação (.zip)</a>
-</div>
-</section>
-</main>
-<script>
-const $ = (id) => document.getElementById(id);
-const form = $("cenario");
-const sistema = matchMedia("(prefers-color-scheme: dark)");
-const definirTema = (tema) => {
-  document.documentElement.dataset.tema = tema;
-  $("tema").textContent = tema === "escuro" ? "Usar tema claro" : "Usar tema escuro";
-};
-const temaSistema = () => sistema.matches ? "escuro" : "claro";
-definirTema(localStorage.getItem("vlab-theme") || temaSistema());
-sistema.addEventListener("change", () => {
-  if (!localStorage.getItem("vlab-theme")) definirTema(temaSistema());
-});
-$("tema").addEventListener("click", () => {
-  const tema = document.documentElement.dataset.tema === "escuro" ? "claro" : "escuro";
-  localStorage.setItem("vlab-theme", tema);
-  definirTema(tema);
-});
-const status = $("status");
-const informar = (mensagem) => { status.textContent = mensagem; };
+  <div class="container">
+    <header>
+      <div>
+        <h1>V-LAB / UFPE • Assistente de Suporte Técnico</h1>
+        <div class="subtitle">Geração Personalizada, Persistência JSON e Avaliação Humana de Prompts</div>
+      </div>
+      <div>
+        <button type="button" id="theme-toggle" class="btn-secondary"></button>
+        <button type="button" id="logout" class="btn-secondary" hidden>Sair</button>
+      </div>
+    </header>
 
-async function api(url, metodo = "GET", corpo) {
-  const opcoes = { method: metodo };
-  if (corpo !== undefined) {
-    opcoes.headers = { "Content-Type": "application/json" };
-    opcoes.body = JSON.stringify(corpo);
-  }
-  const resposta = await fetch(url, opcoes);
-  if (resposta.status === 204) return null;
-  const dados = await resposta.json();
-  if (!resposta.ok) {
-    throw new Error(typeof dados.detail === "string" ? dados.detail : "Confira os campos informados.");
-  }
-  return dados;
-}
+    <div id="alert-container" role="status"></div>
+    <section class="card auth-card" id="auth-card" hidden>
+      <h2 class="card-title" id="auth-title">Entrar</h2>
+      <form id="auth-form">
+        <div class="form-group">
+          <label for="auth-user">Usuário</label>
+          <input id="auth-user" autocomplete="username" required minlength="3" maxlength="64" pattern="[A-Za-z0-9_.\-]+">
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Senha</label>
+          <input id="auth-password" type="password" autocomplete="current-password" required minlength="10" maxlength="128">
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary" id="auth-submit">Entrar</button>
+          <button type="button" class="btn-secondary" id="auth-toggle">Criar conta</button>
+        </div>
+      </form>
+    </section>
 
-async function carregarCatalogos() {
-  const [perfis, tickets] = await Promise.all([api("/api/perfis"), api("/api/tickets")]);
-  form.elements.perfil.replaceChildren(...perfis.map(p => new Option(
-    `${p.id} · ${p.nome} · ${p.nivel} / ${p.estilo} / ${p.canal}`, p.id
-  )));
-  form.elements.ticketId.replaceChildren(new Option("Usar relato livre", ""), ...tickets.map(
-    t => new Option(t.titulo, t.id)
-  ));
-}
+    <div class="grid" id="workspace" hidden>
+      <!-- PAINEL DE CONTROLE -->
+      <div class="card">
+        <div class="card-title">1. Configuração do Cenário</div>
 
-function cenario(versao = form.elements.versao.value) {
-  const ticket = form.elements.ticket.value.trim();
-  return {
-    perfil_id: form.elements.perfil.value,
-    tipo: form.elements.tipo.value,
-    versao,
-    ...(ticket ? { ticket } : { ticket_id: form.elements.ticketId.value }),
-  };
-}
+        <div class="form-group">
+          <label for="select-perfil">Perfil do Cliente</label>
+          <select id="select-perfil"></select>
+          <div id="perfil-detalhes" class="profile-info">Carregando perfil...</div>
+        </div>
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  $("gerar").disabled = true;
-  informar("Gerando resposta...");
-  try {
-    const dados = await api("/api/execucoes", "POST", cenario());
-    $("saida").textContent = JSON.stringify(dados.saida, null, 2);
-    informar(`Atendimento ${dados.run_id} salvo · ${dados.registro.provedor}`);
-  } catch (erro) {
-    informar(erro.message);
-  } finally {
-    $("gerar").disabled = false;
-  }
-});
+        <div class="form-group">
+          <label for="select-ticket">Ticket Pré-definido</label>
+          <select id="select-ticket"></select>
+        </div>
 
-const criterios = {
-  clarity: "Clareza",
-  customer_fit: "Adequação ao cliente",
-  actionability: "Acionabilidade",
-};
-let parAtivo;
+        <div class="form-group">
+          <label for="input-ticket">Relato do Problema</label>
+          <textarea id="input-ticket" rows="4" placeholder="Descreva o incidente do cliente..."></textarea>
+        </div>
 
-function montarRubrica(execucao) {
-  const grupo = document.createElement("fieldset");
-  const titulo = document.createElement("legend");
-  titulo.textContent = `${execucao.registro.versao} · ${execucao.run_id}`;
-  grupo.append(titulo);
-  for (const [chave, rotulo] of Object.entries(criterios)) {
-    const base = `${execucao.run_id}:${chave}`;
-    const labelNota = document.createElement("label");
-    labelNota.textContent = `${rotulo} (1 a 5)`;
-    const nota = document.createElement("input");
-    Object.assign(nota, { type:"number", min:"1", max:"5", step:"1", required:true, name:base });
-    labelNota.append(nota);
-    const labelTexto = document.createElement("label");
-    labelTexto.textContent = "Justificativa";
-    const texto = document.createElement("textarea");
-    Object.assign(texto, { required:true, name:base + ":texto", rows:2 });
-    labelTexto.append(texto);
-    grupo.append(labelNota, labelTexto);
-  }
-  return grupo;
-}
+        <div class="form-group">
+          <label for="select-tipo">Tipo de Conteúdo</label>
+          <select id="select-tipo">
+            <option value="resolucao">Passo a passo de Resolução</option>
+            <option value="diagnostico">Diagnóstico Estruturado</option>
+            <option value="perguntas">Perguntas de Esclarecimento</option>
+            <option value="fluxo">Resumo Visual do Fluxo (ASCII)</option>
+          </select>
+        </div>
 
-$("comparar").addEventListener("click", async () => {
-  $("comparar").disabled = true;
-  $("gerar").disabled = true;
-  $("dupla").hidden = true;
-  $("download").hidden = true;
-  informar("Gerando as duas versões...");
-  try {
-    const base = cenario("v1");
-    const v1 = await api("/api/execucoes", "POST", { ...base, sem_cache:true });
-    const v2 = await api("/api/execucoes", "POST", { ...base, versao:"v2", sem_cache:true });
-    parAtivo = await api("/api/comparacoes", "POST", { run_ids:[v1.run_id, v2.run_id] });
-    $("comparacoes").replaceChildren(...[v1,v2].map(execucao => {
-      const cartao = document.createElement("section");
-      const h = document.createElement("h2");
-      const pre = document.createElement("pre");
-      h.textContent = `${execucao.registro.versao} · ${execucao.registro.modelo}`;
-      pre.textContent = JSON.stringify(execucao.saida, null, 2);
-      cartao.append(h,pre);
-      return cartao;
-    }));
-    $("rubrica").reset();
-    $("notas").replaceChildren(...[v1,v2].map(montarRubrica));
-    $("dupla").hidden = false;
-    informar(v1.registro.provedor === "fake" ? "Par criado em modo simulado." : "Par criado. Avalie as respostas.");
-  } catch (erro) {
-    informar(erro.message);
-  } finally {
-    $("comparar").disabled = false;
-    $("gerar").disabled = false;
-  }
-});
+        <div class="form-group">
+          <label for="select-versao">Versão do Prompt</label>
+          <select id="select-versao">
+            <option value="v1">v1 (Versão Base)</option>
+            <option value="v2">v2 (Versão Aprimorada - Sinais Visuais)</option>
+          </select>
+        </div>
 
-$("rubrica").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (!parAtivo) return;
-  const campos = new FormData(e.currentTarget);
-  const notas = {};
-  for (const id of parAtivo.run_ids) {
-    notas[id] = {};
-    for (const chave of Object.keys(criterios)) {
-      const base = `${id}:${chave}`;
-      notas[id][chave] = { nota:Number(campos.get(base)), justificativa:campos.get(base + ":texto") };
+        <div class="btn-row">
+          <button id="btn-gerar" class="btn-primary" onclick="gerarResposta()">Gerar Resposta</button>
+          <button id="btn-comparar" class="btn-secondary" onclick="executarComparacao()">Comparar v1 vs v2</button>
+        </div>
+      </div>
+
+      <!-- PAINEL DE RESULTADOS -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Resposta & Histórico</span>
+          <span id="cache-indicator"></span>
+        </div>
+
+        <div id="single-view">
+          <div id="empty-state" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            Selecione o cenário ao lado e clique em <b>Gerar Resposta</b> ou <b>Comparar v1 vs v2</b>.
+          </div>
+          <div id="output-container" style="display: none;"></div>
+        </div>
+
+        <div id="comparison-view" style="display: none;">
+          <div class="comparison-grid">
+            <div id="col-v1"></div>
+            <div id="col-v2"></div>
+          </div>
+
+          <!-- SEÇÃO DA RUBRICA DE AVALIAÇÃO HUMANA -->
+          <div id="rubric-container" class="eval-section" style="display: none;">
+            <div class="card-title">3. Rubrica Obrigatória de Avaliação Humana (1 a 5)</div>
+            <div id="rubric-form"></div>
+            <a id="download-comparison" class="download" hidden>Baixar comparação (.zip)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeButton = document.getElementById('theme-toggle');
+    const preferredTheme = matchMedia('(prefers-color-scheme: dark)');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      themeButton.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
     }
-  }
-  $("salvar-notas").disabled = true;
-  try {
-    await api("/api/comparacoes/" + parAtivo.comparison_id + "/avaliacao", "PUT", {
-      avaliador:campos.get("avaliador"), conclusao:campos.get("conclusao"), notas,
+    const systemTheme = () => preferredTheme.matches ? 'dark' : 'light';
+    applyTheme(localStorage.getItem('vlab-theme') || systemTheme());
+    preferredTheme.addEventListener('change', () => {
+      if (!localStorage.getItem('vlab-theme')) applyTheme(systemTheme());
     });
-    $("download").href = "/api/comparacoes/" + parAtivo.comparison_id + "/exportar";
-    $("download").hidden = false;
-    informar("Rubrica salva.");
-  } catch (erro) {
-    informar(erro.message);
-  } finally {
-    $("salvar-notas").disabled = false;
-  }
-});
+    themeButton.addEventListener('click', () => {
+      const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('vlab-theme', theme);
+      applyTheme(theme);
+    });
 
-async function aplicarSessao(usuario) {
-  $("conta").hidden = Boolean(usuario);
-  $("painel").hidden = !usuario;
-  $("sair").hidden = !usuario;
-  if (usuario) await carregarCatalogos();
-}
+    const authForm = document.getElementById('auth-form');
+    const authToggle = document.getElementById('auth-toggle');
+    const authSubmit = document.getElementById('auth-submit');
+    const authPassword = document.getElementById('auth-password');
+    const logout = document.getElementById('logout');
+    let registering = false;
 
-$("credenciais").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const conta = e.currentTarget;
-  const campos = new FormData(conta);
-  const corpo = { usuario: campos.get("usuario"), senha: campos.get("senha") };
-  try {
-    if (e.submitter?.value === "registro") await api("/api/auth/registro", "POST", corpo);
-    const dados = await api("/api/auth/login", "POST", corpo);
-    conta.reset();
-    await aplicarSessao(dados.usuario);
-    informar("");
-  } catch (erro) {
-    informar(erro.message);
-  }
-});
+    function showSession(user) {
+      document.getElementById('auth-card').hidden = Boolean(user);
+      document.getElementById('workspace').hidden = !user;
+      logout.hidden = !user;
+      if (user) carregarCatalogos();
+    }
 
-$("sair").addEventListener("click", async () => {
-  try {
-    await api("/api/auth/logout", "POST");
-    location.reload();
-  } catch (erro) {
-    informar(erro.message);
-  }
-});
+    authToggle.addEventListener('click', () => {
+      registering = !registering;
+      const title = registering ? 'Criar conta' : 'Entrar';
+      document.getElementById('auth-title').textContent = title;
+      authSubmit.textContent = title;
+      authToggle.textContent = registering ? 'Voltar para entrar' : 'Criar conta';
+      authPassword.autocomplete = registering ? 'new-password' : 'current-password';
+    });
 
-api("/api/auth/sessao").then(dados => aplicarSessao(dados.usuario)).catch(erro => informar(erro.message));
-</script>
+    async function submitCredentials(action, credentials) {
+      const response = await fetch('/api/auth/' + action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof result.detail === 'string' ? result.detail : 'Confira usuário e senha.');
+      }
+      return result.usuario;
+    }
+
+    authForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      authSubmit.disabled = true;
+      authToggle.disabled = true;
+      const credentials = {
+        usuario: document.getElementById('auth-user').value.trim(),
+        senha: authPassword.value,
+      };
+      try {
+        if (registering) await submitCredentials('registro', credentials);
+        const user = await submitCredentials('login', credentials);
+        authForm.reset();
+        showSession(user);
+      } catch (error) {
+        mostrarAlerta(error.message);
+      } finally {
+        authSubmit.disabled = false;
+        authToggle.disabled = false;
+      }
+    });
+
+    logout.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/auth/logout', { method: 'POST' });
+        if (!response.ok && response.status !== 401) throw new Error();
+        location.reload();
+      } catch {
+        mostrarAlerta('Não foi possível sair. Tente novamente.');
+      }
+    });
+
+    function escapar(valor) {
+      return String(valor ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[char]);
+    }
+
+    let perfis = [];
+    let tickets = [];
+    let activeComparisonId = null;
+    let runV1Id = null;
+    let runV2Id = null;
+    let evaluationData = {};
+
+    async function carregarCatalogos() {
+      try {
+        const [resPerfis, resTickets] = await Promise.all([
+          fetch('/api/perfis'),
+          fetch('/api/tickets')
+        ]);
+        if (!resPerfis.ok || !resTickets.ok) throw new Error("Falha ao carregar o catálogo.");
+        perfis = await resPerfis.json();
+        tickets = await resTickets.json();
+
+        const selPerfil = document.getElementById('select-perfil');
+        selPerfil.innerHTML = perfis.map(p => `<option value="${escapar(p.id)}">${escapar(p.nome)} (${escapar(p.nivel)} - ${escapar(p.canal)})</option>`).join('');
+        selPerfil.onchange = atualizarPerfilDetalhe;
+        atualizarPerfilDetalhe();
+
+        const selTicket = document.getElementById('select-ticket');
+        selTicket.innerHTML = tickets.map(t => `<option value="${escapar(t.id)}">[${escapar(t.id)}] ${escapar(t.titulo)}</option>`).join('') + '<option value="custom">Outro (Digitar texto livre)</option>';
+        selTicket.onchange = atualizarTicketTexto;
+        atualizarTicketTexto();
+      } catch (err) {
+        mostrarAlerta('Falha ao conectar com o catálogo da API.', 'error');
+      }
+    }
+
+    function atualizarPerfilDetalhe() {
+      const p = perfis.find(x => x.id === document.getElementById('select-perfil').value);
+      if (p) {
+        document.getElementById('perfil-detalhes').innerHTML =
+          `<b>${escapar(p.nome)}</b> • ID: <code>${escapar(p.id)}</code> • Nível: <i>${escapar(p.nivel)}</i> | Estilo: <i>${escapar(p.estilo)}</i> | Canal: <i>${escapar(p.canal)}</i>`;
+      }
+    }
+
+    function atualizarTicketTexto() {
+      const selVal = document.getElementById('select-ticket').value;
+      if (selVal === 'custom') {
+        document.getElementById('input-ticket').value = '';
+        document.getElementById('input-ticket').focus();
+      } else {
+        const t = tickets.find(x => x.id === selVal);
+        if (t) document.getElementById('input-ticket').value = t.descricao;
+      }
+    }
+
+    function mostrarAlerta(msg, tipo = 'error') {
+      const c = document.getElementById('alert-container');
+      c.innerHTML = `<div class="alert alert-${tipo}">${escapar(msg)}</div>`;
+      setTimeout(() => { c.innerHTML = ''; }, 6000);
+    }
+
+    function renderizarConteudo(tipo, data) {
+      if (tipo === 'resolucao') {
+        return (data.passos || []).map(p => `
+          <div class="step-item">
+            <div class="step-num">Passo ${escapar(p.ordem)}: ${escapar(p.acao)}</div>
+            <div class="expected-signal"><b>Sinal esperado:</b> ${escapar(p.sinal_esperado)}</div>
+            <div class="fallback-action"><b>Se falhar:</b> ${escapar(p.se_falhar)}</div>
+          </div>
+        `).join('');
+      } else if (tipo === 'diagnostico') {
+        return `
+          <div style="margin-bottom: 0.8rem;"><b>Hipóteses:</b><ul style="padding-left: 1.2rem;">${(data.hipoteses || []).map(h => `<li>${escapar(h)}</li>`).join('')}</ul></div>
+          <div style="margin-bottom: 0.8rem;"><b>Evidências:</b><ul style="padding-left: 1.2rem;">${(data.evidencias || []).map(e => `<li>${escapar(e)}</li>`).join('')}</ul></div>
+          <div style="margin-bottom: 0.8rem;"><b>Dados Faltantes:</b><ul style="padding-left: 1.2rem;">${(data.dados_faltantes || []).map(d => `<li>${escapar(d)}</li>`).join('')}</ul></div>
+          <div><b>Conclusão Provável:</b><p style="margin-top: 0.3rem; color: var(--info);">${escapar(data.conclusao_provavel || '')}</p></div>
+        `;
+      } else if (tipo === 'perguntas') {
+        return (data.itens || []).map(it => `
+          <div class="step-item">
+            <div class="step-num">[Prioridade ${escapar(it.prioridade)}] ${escapar(it.pergunta)}</div>
+            <div style="color: var(--accent); font-size: 0.85rem; margin-top: 0.3rem;">Decisão afetada: ${escapar(it.decisao_afetada)}</div>
+          </div>
+        `).join('');
+      } else if (tipo === 'fluxo') {
+        return `
+          <div class="ascii-art">${escapar(data.ascii_diagram || '')}</div>
+          <div style="margin-top: 0.8rem; font-size: 0.85rem;"><b>Nó Inicial:</b> ${escapar(data.inicio)}</div>
+        `;
+      }
+      return `<pre class="ascii-art">${escapar(JSON.stringify(data, null, 2))}</pre>`;
+    }
+
+    function ticketSelecionado() {
+      const id = document.getElementById('select-ticket').value;
+      const texto = document.getElementById('input-ticket').value;
+      const ticket = tickets.find(item => item.id === id);
+      return ticket?.descricao === texto ? { ticket_id: id } : { ticket: texto };
+    }
+
+    async function gerarResposta() {
+      const btn = document.getElementById('btn-gerar');
+      btn.disabled = true;
+      btn.innerText = 'Processando...';
+
+      document.getElementById('comparison-view').style.display = 'none';
+      document.getElementById('single-view').style.display = 'block';
+
+      const payload = {
+        perfil_id: document.getElementById('select-perfil').value,
+        tipo: document.getElementById('select-tipo').value,
+        versao: document.getElementById('select-versao').value,
+        ...ticketSelecionado(),
+      };
+
+      try {
+        const res = await fetch('/api/execucoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          mostrarAlerta(errData.detail || 'Falha na requisição.', 'error');
+          return;
+        }
+
+        const data = await res.json();
+        const reg = data.registro;
+
+        document.getElementById('empty-state').style.display = 'none';
+        const outBox = document.getElementById('output-container');
+        outBox.style.display = 'block';
+
+        const cacheBadge = reg.cache_hit
+          ? `<span class="badge badge-cache">Cache Hit (origem: ${reg.source_run_id})</span>`
+          : `<span class="badge badge-success">${reg.provedor === 'fake' ? 'Simulação offline' : 'Geração concluída'}</span>`;
+
+        document.getElementById('cache-indicator').innerHTML = cacheBadge;
+
+        outBox.innerHTML = `
+          <div class="output-box">
+            <div class="output-header">
+              <span><b>${reg.tipo.toUpperCase()}</b> • Versão <b>${reg.versao}</b></span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Run ID: ${reg.run_id}</span>
+            </div>
+            ${renderizarConteudo(reg.tipo, data.saida)}
+            <div style="margin-top: 1rem; font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid #1e293b; padding-top: 0.6rem;">
+              Provedor: ${reg.provedor} | Modelo: ${escapar(reg.modelo)} | Chave SHA-256: <code>${escapar(reg.input_key?.slice(0, 16) || '')}...</code>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        mostrarAlerta('Erro de rede ou servidor indisponível.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Gerar Resposta';
+      }
+    }
+
+    async function executarComparacao() {
+      const btn = document.getElementById('btn-comparar');
+      btn.disabled = true;
+      btn.innerText = 'Comparando...';
+
+      document.getElementById('single-view').style.display = 'none';
+      document.getElementById('comparison-view').style.display = 'block';
+      document.getElementById('col-v1').innerHTML = '<div class="card">Carregando V1...</div>';
+      document.getElementById('col-v2').innerHTML = '<div class="card">Carregando V2...</div>';
+      document.getElementById('rubric-container').style.display = 'none';
+      document.getElementById('download-comparison').hidden = true;
+      activeComparisonId = null;
+
+      const perfil_id = document.getElementById('select-perfil').value;
+      const tipo = document.getElementById('select-tipo').value;
+      const relato = ticketSelecionado();
+
+      try {
+        const [resV1, resV2] = await Promise.all([
+          fetch('/api/execucoes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ perfil_id, tipo, versao: 'v1', ...relato, sem_cache: true })
+          }),
+          fetch('/api/execucoes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ perfil_id, tipo, versao: 'v2', ...relato, sem_cache: true })
+          })
+        ]);
+
+        const dataV1 = await resV1.json();
+        const dataV2 = await resV2.json();
+
+        if (!resV1.ok || !resV2.ok) {
+          throw new Error((resV1.ok ? dataV2 : dataV1).detail || 'Falha na geração.');
+        }
+        if (dataV1.registro.provedor === 'fake') {
+          mostrarAlerta('Demonstração offline com exemplos por perfil e versão.', 'success');
+        }
+        runV1Id = dataV1.registro.run_id;
+        runV2Id = dataV2.registro.run_id;
+
+        document.getElementById('col-v1').innerHTML = `
+          <div class="output-box">
+            <div class="output-header">
+              <span style="color: var(--accent); font-weight: 700;">VERSÃO 1 (Base)</span>
+              <span style="font-size: 0.75rem;">ID: ${runV1Id}</span>
+            </div>
+            ${renderizarConteudo(tipo, dataV1.saida)}
+          </div>
+        `;
+
+        document.getElementById('col-v2').innerHTML = `
+          <div class="output-box">
+            <div class="output-header">
+              <span style="color: var(--positive); font-weight: 700;">VERSÃO 2 (Aprimorada)</span>
+              <span style="font-size: 0.75rem;">ID: ${runV2Id}</span>
+            </div>
+            ${renderizarConteudo(tipo, dataV2.saida)}
+          </div>
+        `;
+
+        // Criar par no backend
+        const compRes = await fetch('/api/comparacoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ run_ids: [runV1Id, runV2Id] })
+        });
+        const compData = await compRes.json();
+        if (!compRes.ok) throw new Error(compData.detail || 'Falha ao criar a comparação.');
+        activeComparisonId = compData.comparison_id;
+
+        montarFormularioRubrica();
+        document.getElementById('rubric-container').style.display = 'block';
+
+      } catch (err) {
+        mostrarAlerta(err.message || 'Erro ao executar comparação.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Comparar v1 vs v2';
+      }
+    }
+
+    function montarFormularioRubrica() {
+      evaluationData = {
+        [runV1Id]: { clarity: { score: 4, justification: "" }, customer_fit: { score: 4, justification: "" }, actionability: { score: 3, justification: "" } },
+        [runV2Id]: { clarity: { score: 5, justification: "" }, customer_fit: { score: 5, justification: "" }, actionability: { score: 5, justification: "" } }
+      };
+
+      const criterios = [
+        { key: 'clarity', label: 'Clareza (1 a 5)', desc: 'Compreensível, organizada e sem ambiguidade.' },
+        { key: 'customer_fit', label: 'Adequação ao Cliente (1 a 5)', desc: 'Vocabulário e tom combinam com o perfil.' },
+        { key: 'actionability', label: 'Acionabilidade (1 a 5)', desc: 'Sabe exatamente o que fazer e o sinal esperado.' }
+      ];
+
+      const form = document.getElementById('rubric-form');
+      form.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <label>Nome do Avaliador:</label>
+          <input type="text" id="eval-name" style="max-width: 300px;">
+        </div>
+        <div class="comparison-grid">
+          <div>
+            <h4 style="color: var(--accent); margin-bottom: 0.8rem;">Avaliação da V1 (${runV1Id})</h4>
+            ${criterios.map(c => `
+              <div class="form-group">
+                <label>${c.label}: <small style="color: var(--text-muted);">${c.desc}</small></label>
+                <input type="number" min="1" max="5" id="v1-${c.key}-score" style="width: 80px; margin-bottom: 0.3rem;">
+                <input type="text" placeholder="Justificativa da nota..." id="v1-${c.key}-just">
+              </div>
+            `).join('')}
+          </div>
+          <div>
+            <h4 style="color: var(--positive); margin-bottom: 0.8rem;">Avaliação da V2 (${runV2Id})</h4>
+            ${criterios.map(c => `
+              <div class="form-group">
+                <label>${c.label}: <small style="color: var(--text-muted);">${c.desc}</small></label>
+                <input type="number" min="1" max="5" id="v2-${c.key}-score" style="width: 80px; margin-bottom: 0.3rem;">
+                <input type="text" placeholder="Justificativa da nota..." id="v2-${c.key}-just">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 1rem;">
+          <label>Conclusão Comparativa Geral:</label>
+          <textarea id="comp-note" rows="3"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="salvarAvaliacao()">Gravar Avaliação Oficial</button>
+        </div>
+      `;
+    }
+
+    async function salvarAvaliacao() {
+      const criterios = ['clarity', 'customer_fit', 'actionability'];
+      const ratings_by_run = {};
+
+      for (const runId of [runV1Id, runV2Id]) {
+        const prefix = runId === runV1Id ? 'v1' : 'v2';
+        ratings_by_run[runId] = {};
+        for (const crit of criterios) {
+          const score = parseInt(document.getElementById(`${prefix}-${crit}-score`).value);
+          const just = document.getElementById(`${prefix}-${crit}-just`).value;
+          ratings_by_run[runId][crit] = { nota: score, justificativa: just };
+        }
+      }
+
+      const evaluator = document.getElementById('eval-name').value;
+      const comparative_note = document.getElementById('comp-note').value;
+
+      try {
+        const res = await fetch(`/api/comparacoes/${activeComparisonId}/avaliacao`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avaliador: evaluator, notas: ratings_by_run, conclusao: comparative_note })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          mostrarAlerta(err.detail || 'Erro ao registrar avaliação.', 'error');
+          return;
+        }
+
+        const download = document.getElementById('download-comparison');
+        download.href = '/api/comparacoes/' + encodeURIComponent(activeComparisonId) + '/exportar';
+        download.hidden = false;
+        mostrarAlerta('Avaliação gravada com sucesso.', 'success');
+      } catch (err) {
+        mostrarAlerta('Falha ao comunicar com o servidor.', 'error');
+      }
+    }
+
+    fetch('/api/auth/sessao')
+      .then(response => response.json())
+      .then(data => showSession(data.usuario))
+      .catch(() => mostrarAlerta('Não foi possível verificar a sessão. Recarregue a página.'));
+  </script>
 </body>
 </html>

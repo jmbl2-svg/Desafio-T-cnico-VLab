@@ -57,5 +57,7 @@ def test_pagina_inicial_exibe_formulario():
     from backend.api import pagina_inicial
 
     pagina = pagina_inicial()
-    assert 'id="cenario"' in pagina
+    assert 'id="select-perfil"' in pagina
+    assert 'id="auth-form"' in pagina
+    assert 'id="comparison-view"' in pagina
     assert "/api/execucoes" in pagina
