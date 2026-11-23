@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, model_validator
 from backend.adapters.json_storage import JsonStorageAdapter
 from backend.adapters.llm_provider import ErroProvedor, LLMIndisponivel
 from backend.bootstrap import criar_geracao, diretorio_dados
+from backend.application.use_cases import avaliar_comparacao, comparar_execucoes
 
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -91,3 +92,50 @@ def obter_execucao(run_id: str):
     if execucao is None:
         raise HTTPException(404, "Execução não encontrada.")
     return execucao
+
+
+class ComparacaoInput(BaseModel):
+    run_ids: tuple[str, str]
+
+
+class NotaInput(BaseModel):
+    nota: int = Field(ge=1, le=5, strict=True)
+    justificativa: str = Field(min_length=1, max_length=5000)
+
+
+class AvaliacaoInput(BaseModel):
+    avaliador: str = Field(min_length=1, max_length=120)
+    notas: dict[str, dict[str, NotaInput]]
+    conclusao: str = Field(min_length=1, max_length=12000)
+
+
+@app.post("/api/comparacoes", status_code=201)
+def criar_comparacao(payload: ComparacaoInput):
+    try:
+        return comparar_execucoes(novo_historico(), *payload.run_ids)
+    except LookupError as erro:
+        raise HTTPException(404, str(erro)) from erro
+    except ValueError as erro:
+        raise HTTPException(422, str(erro)) from erro
+
+
+@app.get("/api/comparacoes/{comparison_id}")
+def obter_comparacao(comparison_id: str):
+    try:
+        comparacao = novo_historico().obter_comparacao(comparison_id)
+    except ValueError as erro:
+        raise HTTPException(422, str(erro)) from erro
+    if comparacao is None:
+        raise HTTPException(404, "Comparação não encontrada.")
+    return comparacao
+
+
+@app.put("/api/comparacoes/{comparison_id}/avaliacao")
+def atualizar_avaliacao(comparison_id: str, payload: AvaliacaoInput):
+    dados = payload.model_dump()
+    try:
+        return avaliar_comparacao(novo_historico(), comparison_id, **dados)
+    except LookupError as erro:
+        raise HTTPException(404, str(erro)) from erro
+    except ValueError as erro:
+        raise HTTPException(422, str(erro)) from erro

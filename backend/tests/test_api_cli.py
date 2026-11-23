@@ -29,3 +29,25 @@ def test_api_gera_resposta_com_o_mesmo_nucleo(tmp_path, monkeypatch):
     assert obter_saude()["status"] == "pronta"
     assert resposta["registro"]["perfil"]["nome"] == "Maria"
     assert resposta["saida"]["passos"]
+
+
+def test_api_compara_e_grava_rubrica(tmp_path, monkeypatch):
+    from backend.api import (
+        AvaliacaoInput, ComparacaoInput, GeracaoInput,
+        atualizar_avaliacao, criar_comparacao, criar_execucao,
+    )
+    from backend.domain.rules import CRITERIOS
+
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("LLM_PROVIDER", "fake")
+    ids = tuple(
+        criar_execucao(GeracaoInput(perfil_id="0001", ticket_id="pasta", versao=v))["run_id"]
+        for v in ("v1", "v2")
+    )
+    par = criar_comparacao(ComparacaoInput(run_ids=ids))
+    notas = {
+        run_id: {c: {"nota": 4, "justificativa": "A ação está clara."} for c in CRITERIOS}
+        for run_id in ids
+    }
+    avaliacao = AvaliacaoInput(avaliador="Teste", notas=notas, conclusao="Comparei as duas versões.")
+    assert atualizar_avaliacao(par["comparison_id"], avaliacao)["status"] == "concluida"
