@@ -130,3 +130,23 @@ def test_rubrica_exige_justificativa():
     notas[ids[0]]["clarity"]["justificativa"] = ""
     with pytest.raises(ValueError, match="justificativa"):
         validar_rubrica(ids, "Avaliador", notas, "Ambas são compreensíveis.")
+
+
+def test_resolucao_offline_aproveita_o_caso_da_pasta_compartilhada():
+    from backend.adapters.llm_provider import FakeGeradorLLM
+    from backend.domain.rules import validar_saida
+
+    gerador = FakeGeradorLLM()
+    perfil = PerfilCliente("0002", "Lucas", "intermediario", "direto", "email")
+    relato = "O envio foi confirmado, mas minha colega não encontra o arquivo na pasta compartilhada."
+    bases = (gerador.gerar("prompt", perfil, relato, versao=versao) for versao in ("v1", "v2"))
+    v1, v2 = bases
+    for saida in (v1, v2):
+        validar_saida("resolucao", saida)
+        assert len(saida["passos"]) == 2
+        assert "destino" in saida["passos"][0]["acao"]
+        assert "e-mail" in saida["passos"][0]["se_falhar"]
+    assert "compare o destino" in v2["passos"][0]["sinal_esperado"]
+    assert v1["passos"][0]["sinal_esperado"] != v2["passos"][0]["sinal_esperado"]
+    outro = gerador.gerar("prompt", perfil, "Não consigo entrar no sistema.")
+    assert "destino" not in outro["passos"][0]["acao"]
