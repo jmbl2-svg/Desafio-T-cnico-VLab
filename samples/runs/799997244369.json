@@ -1,0 +1,31 @@
+{
+  "run_id": "799997244369",
+  "timestamp_utc": "2026-11-23T01:49:48.230748+00:00",
+  "perfil": {
+    "id": "0001",
+    "nome": "Maria",
+    "nivel": "leigo",
+    "estilo": "didatico",
+    "canal": "chat"
+  },
+  "ticket": "O envio foi confirmado, mas minha colega não encontra o arquivo na pasta compartilhada.",
+  "saida": {
+    "passos": [
+      {
+        "ordem": 1,
+        "acao": "Volte à tela onde o problema apareceu e observe o que acontece. Por que fazer isso? Isso ajuda a descobrir em qual tela o problema começa.",
+        "sinal_esperado": "Você consegue dizer se o problema apareceu de novo. Se o sinal aparecer, confirme o resultado pelo canal de atendimento.",
+        "se_falhar": "Conte aqui no chat o que apareceu na tela."
+      }
+    ]
+  },
+  "tipo": "resolucao",
+  "versao": "v2",
+  "provedor": "fake",
+  "modelo": "fake-support-v1",
+  "parametros": {},
+  "template_hash": "80bbc515c743669749e804b56e188324c1a4511cc30b7dac37a2a5fa9fec68e4",
+  "input_key": "6af1be49d75ad2d01965bfed57b8cef4c900697af0431fef4657e77f19e8b985",
+  "cache_hit": false,
+  "source_run_id": null
+}

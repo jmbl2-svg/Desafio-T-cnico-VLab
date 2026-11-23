@@ -1,0 +1,43 @@
+{
+  "comparison_id": "comp_45b5d35fe52c7cd120d2814f",
+  "run_ids": [
+    "544812890908",
+    "799997244369"
+  ],
+  "criada_em": "2026-11-23T01:49:48.237738+00:00",
+  "status": "concluida",
+  "avaliacao": {
+    "avaliador": "Rubrica ilustrativa",
+    "notas": {
+      "544812890908": {
+        "clarity": {
+          "nota": 4,
+          "justificativa": "A ação e o sinal esperado aparecem em campos distintos."
+        },
+        "customer_fit": {
+          "nota": 4,
+          "justificativa": "O exemplo usa linguagem cotidiana e resposta pelo chat."
+        },
+        "actionability": {
+          "nota": 4,
+          "justificativa": "A resposta oferece uma ação e uma alternativa caso ela falhe."
+        }
+      },
+      "799997244369": {
+        "clarity": {
+          "nota": 4,
+          "justificativa": "A ação e o sinal esperado aparecem em campos distintos."
+        },
+        "customer_fit": {
+          "nota": 4,
+          "justificativa": "O exemplo usa linguagem cotidiana e resposta pelo chat."
+        },
+        "actionability": {
+          "nota": 5,
+          "justificativa": "O sinal esperado traz uma ação quando a condição se confirma."
+        }
+      }
+    },
+    "conclusao": "Na simulação, v2 acrescenta uma orientação quando o sinal é observado."
+  }
+}
