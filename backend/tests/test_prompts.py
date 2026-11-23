@@ -34,3 +34,14 @@ def test_v2_altera_a_instrucao_de_resolucao():
     v2 = montar_prompt(perfil, "Pasta indisponível.", versao="v2")
     assert "Pasta indisponível." in v1 and "Pasta indisponível." in v2
     assert "próxima ação" in v2.removeprefix(v1)
+
+
+def test_hash_dos_templates_muda_entre_versoes():
+    from backend.application.use_cases import _preparar_prompt
+    from backend.cli import PASTA_PROMPTS
+
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    _, hash_v1 = _preparar_prompt(PASTA_PROMPTS, perfil, "Pasta ausente.", versao="v1")
+    _, hash_v2 = _preparar_prompt(PASTA_PROMPTS, perfil, "Pasta ausente.", versao="v2")
+    assert len(hash_v1) == 64
+    assert hash_v1 != hash_v2

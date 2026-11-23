@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "required": [
+    "run_id",
+    "timestamp_utc",
+    "perfil",
+    "ticket",
+    "saida",
+    "tipo",
+    "versao",
+    "provedor",
+    "modelo",
+    "parametros",
+    "template_hash"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^[0-9]{12}$"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "perfil": {
+      "type": "object"
+    },
+    "ticket": {
+      "type": "string"
+    },
+    "saida": {
+      "type": "object"
+    },
+    "tipo": {
+      "enum": [
+        "resolucao",
+        "diagnostico",
+        "perguntas",
+        "fluxo"
+      ]
+    },
+    "versao": {
+      "enum": [
+        "v1",
+        "v2"
+      ]
+    },
+    "provedor": {
+      "type": "string"
+    },
+    "modelo": {
+      "type": "string"
+    },
+    "parametros": {
+      "type": "object"
+    },
+    "template_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

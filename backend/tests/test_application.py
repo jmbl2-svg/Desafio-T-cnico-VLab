@@ -12,7 +12,7 @@ def test_caso_de_uso_envia_prompt_ao_gerador_e_grava():
             return {"passos": []}
 
     class Historico:
-        def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1"):
+        def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1", **metadados):
             assert saida == {"passos": []}
             return Path("teste.json")
 

@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
-from backend.domain.models import PerfilCliente, Ticket
+from backend.domain.models import Execucao, PerfilCliente, Ticket
 from backend.domain.rules import validar_saida
 
 
@@ -26,22 +26,23 @@ class JsonStorageAdapter:
 
         return [Ticket(**item) for item in dados]
 
-    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1"):
+    def salvar_execucao(
+        self, perfil, relato, saida, tipo="resolucao", versao="v1", *,
+        provedor="fake", modelo="fake-support-v1", parametros=None, template_hash=None,
+    ):
         validar_saida(tipo, saida)
         self.pasta_execucoes.mkdir(parents=True, exist_ok=True)
 
         while True:
             run_id = str(secrets.randbelow(900_000_000_000) + 100_000_000_000)
             caminho = self.pasta_execucoes / f"{run_id}.json"
-            registro = {
-                "run_id": run_id,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                "perfil": perfil.to_dict(),
-                "ticket": relato,
-                "tipo": tipo,
-                "versao": versao,
-                "saida": saida,
-            }
+            registro = Execucao(
+                run_id=run_id, timestamp_utc=datetime.now(timezone.utc).isoformat(),
+                perfil=perfil.to_dict(), ticket=relato, saida=saida, tipo=tipo, versao=versao,
+                provedor=provedor, modelo=modelo, parametros=parametros or {},
+                template_hash=template_hash,
+            ).to_dict()
+
             try:
                 with caminho.open("x", encoding="utf-8") as arquivo:
                     json.dump(registro, arquivo, ensure_ascii=False, indent=2)

@@ -8,6 +8,6 @@ class GeradorLLMPort(Protocol):
 
 
 class HistoricoPort(Protocol):
-    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1"):
+    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1", **metadados):
         """Grava uma execução concluída e devolve seu caminho."""
         ...
