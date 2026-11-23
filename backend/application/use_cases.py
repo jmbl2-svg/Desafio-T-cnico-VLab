@@ -1,8 +1,12 @@
 from backend.application.ports import GeradorLLMPort, HistoricoPort
 
 
-def montar_prompt(pasta_prompts, perfil, relato, tipo="resolucao"):
-    pasta = pasta_prompts / "v1"
+def montar_prompt(pasta_prompts, perfil, relato, tipo="resolucao", versao="v1"):
+    if versao not in ("v1", "v2"):
+        raise ValueError("Versão do prompt inválida.")
+    if tipo not in ("resolucao", "diagnostico", "perguntas", "fluxo"):
+        raise ValueError("Tipo de conteúdo inválido.")
+    pasta = pasta_prompts / versao
     base = (pasta / "base.txt").read_text(encoding="utf-8")
     estrategia = (pasta / f"{tipo}.txt").read_text(encoding="utf-8")
     contexto = base.format(
@@ -22,8 +26,8 @@ class GerarRespostaUseCase:
         self.historico = historico
         self.pasta_prompts = pasta_prompts
 
-    def executar(self, perfil, relato, tipo="resolucao"):
-        prompt = montar_prompt(self.pasta_prompts, perfil, relato, tipo)
-        saida = self.gerador.gerar(prompt, perfil, relato, tipo)
-        caminho = self.historico.salvar_execucao(perfil, relato, saida, tipo)
+    def executar(self, perfil, relato, tipo="resolucao", versao="v1"):
+        prompt = montar_prompt(self.pasta_prompts, perfil, relato, tipo, versao)
+        saida = self.gerador.gerar(prompt, perfil, relato, tipo, versao)
+        caminho = self.historico.salvar_execucao(perfil, relato, saida, tipo, versao)
         return saida, caminho

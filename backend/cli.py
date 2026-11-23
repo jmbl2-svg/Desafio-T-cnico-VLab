@@ -60,8 +60,8 @@ def escolher_relato(tickets):
     return None
 
 
-def montar_prompt(perfil, relato, tipo="resolucao"):
-    return renderizar_prompt(PASTA_PROMPTS, perfil, relato, tipo)
+def montar_prompt(perfil, relato, tipo="resolucao", versao="v1"):
+    return renderizar_prompt(PASTA_PROMPTS, perfil, relato, tipo, versao)
 
 
 def salvar_execucao(perfil, relato, saida):
@@ -84,14 +84,19 @@ def main():
         print("Tipo de conteúdo inválido.")
         return
 
-    prompt = montar_prompt(perfil, relato, tipo)
+    versao = input("Versão (v1, v2) [v1]: ").strip().lower() or "v1"
+    if versao not in ("v1", "v2"):
+        print("Versão inválida. Use v1 ou v2.")
+        return
+
+    prompt = montar_prompt(perfil, relato, tipo, versao)
     print("\nPrompt (demonstração offline):")
     print(prompt)
 
     print(f"Cliente: {perfil.nome} | Canal: {perfil.canal}")
     print(f"Relato recebido: {relato}")
     geracao = criar_geracao(PASTA_CATALOGOS, PASTA_EXECUCOES, PASTA_PROMPTS)
-    saida, caminho = geracao.executar(perfil, relato, tipo)
+    saida, caminho = geracao.executar(perfil, relato, tipo, versao)
 
     if tipo == "resolucao":
         for passo in saida["passos"]:

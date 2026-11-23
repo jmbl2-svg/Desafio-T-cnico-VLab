@@ -26,7 +26,7 @@ class JsonStorageAdapter:
 
         return [Ticket(**item) for item in dados]
 
-    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao"):
+    def salvar_execucao(self, perfil, relato, saida, tipo="resolucao", versao="v1"):
         validar_saida(tipo, saida)
         self.pasta_execucoes.mkdir(parents=True, exist_ok=True)
 
@@ -39,6 +39,7 @@ class JsonStorageAdapter:
                 "perfil": perfil.to_dict(),
                 "ticket": relato,
                 "tipo": tipo,
+                "versao": versao,
                 "saida": saida,
             }
             try:

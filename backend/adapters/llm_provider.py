@@ -49,7 +49,7 @@ def orientar(perfil):
 
 
 class FakeGeradorLLM:
-    def gerar(self, prompt, perfil, relato, tipo="resolucao"):
+    def gerar(self, prompt, perfil, relato, tipo="resolucao", versao="v1"):
         if tipo == "diagnostico":
             saida = json.loads("{\"hipoteses\":[\"A falha pode depender da etapa em que ocorre.\"],\"evidencias\":[\"Relato recebido para análise.\"],\"dados_faltantes\":[\"Qual mensagem apareceu na tela?\"],\"conclusao_provavel\":\"A causa precisa ser confirmada.\"}")
             saida["evidencias"] = [relato]

@@ -1,0 +1,18 @@
+Tarefa: gere diagnostico para o ticket informado.
+Separe indícios relatados de hipóteses. Indique quais dados faltam antes de concluir.
+Retorne apenas um objeto JSON com hipoteses, evidencias, dados_faltantes e conclusao_provavel.
+Exemplo de estrutura:
+{
+  "hipoteses": [
+    "A falha pode depender da etapa em que ocorre."
+  ],
+  "evidencias": [
+    "Relato recebido para análise."
+  ],
+  "dados_faltantes": [
+    "Qual mensagem apareceu na tela?"
+  ],
+  "conclusao_provavel": "A causa precisa ser confirmada."
+}
+
+Instrução adicional de v2: Distinga observação, hipótese e causa confirmada. Trate informações ausentes como perguntas, e não como fatos.

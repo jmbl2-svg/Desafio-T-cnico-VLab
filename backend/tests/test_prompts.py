@@ -26,3 +26,11 @@ def test_fixtures_cumprem_os_contratos():
     for tipo in ("resolucao", "diagnostico", "perguntas", "fluxo"):
         arquivo = raiz / "IA" / "fixtures" / f"{tipo}_fixture.json"
         validar_saida(tipo, json.loads(arquivo.read_text(encoding="utf-8")))
+
+
+def test_v2_altera_a_instrucao_de_resolucao():
+    perfil = PerfilCliente("0001", "Maria", "leigo", "didatico", "chat")
+    v1 = montar_prompt(perfil, "Pasta indisponível.")
+    v2 = montar_prompt(perfil, "Pasta indisponível.", versao="v2")
+    assert "Pasta indisponível." in v1 and "Pasta indisponível." in v2
+    assert "próxima ação" in v2.removeprefix(v1)
