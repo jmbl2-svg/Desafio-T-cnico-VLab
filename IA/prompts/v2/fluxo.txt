@@ -26,3 +26,7 @@ Exemplo de estrutura:
 }
 
 Instrução adicional de v2: Use condições verificáveis e explicite o resultado de cada ramo.
+
+Comece com uma verificação observável e ofereça ramos para sinais diferentes. Cada caminho termina
+em ação, solução confirmada ou encaminhamento com dados concretos. Se o relato já informa uma
+verificação, siga adiante. Preserve os IDs e os formatos; o diagrama deve representar os mesmos ramos.

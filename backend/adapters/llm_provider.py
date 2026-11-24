@@ -14,7 +14,7 @@ from backend.domain.rules import validar_saida
 class FakeGeradorLLM:
     provedor = "fake"
     modelo = "fake-support-v2"
-    identidade_cache = "fake-support-v2-pasta-r2"
+    identidade_cache = "fake-support-v2-decisoes-r4"
 
     def gerar(self, prompt, perfil, relato, tipo="resolucao", versao="v1"):
         return gerar_demonstracao(perfil, relato, tipo, versao)

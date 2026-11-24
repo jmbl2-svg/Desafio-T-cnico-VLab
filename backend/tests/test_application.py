@@ -143,10 +143,26 @@ def test_resolucao_offline_aproveita_o_caso_da_pasta_compartilhada():
     v1, v2 = bases
     for saida in (v1, v2):
         validar_saida("resolucao", saida)
-        assert len(saida["passos"]) == 2
-        assert "destino" in saida["passos"][0]["acao"]
         assert "e-mail" in saida["passos"][0]["se_falhar"]
-    assert "compare o destino" in v2["passos"][0]["sinal_esperado"]
+    assert "destino" in v1["passos"][0]["acao"]
+    assert "só se o envio estiver concluído" in v2["passos"][0]["sinal_esperado"]
+    assert "acesso for negado" in v2["passos"][1]["se_falhar"]
     assert v1["passos"][0]["sinal_esperado"] != v2["passos"][0]["sinal_esperado"]
     outro = gerador.gerar("prompt", perfil, "Não consigo entrar no sistema.")
     assert "destino" not in outro["passos"][0]["acao"]
+
+
+def test_v2_confirma_resultado_e_informa_o_que_escalar():
+    from backend.adapters.llm_provider import FakeGeradorLLM
+
+    perfil = PerfilCliente("0002", "Lucas", "intermediario", "direto", "email")
+    relato = "O envio foi confirmado, mas minha colega não encontra o arquivo na pasta compartilhada."
+    gerador = FakeGeradorLLM()
+    v1 = gerador.gerar("prompt", perfil, relato, versao="v1")["passos"]
+    v2 = gerador.gerar("prompt", perfil, relato, versao="v2")["passos"]
+    assert len(v1) == 2
+    assert [passo["ordem"] for passo in v2] == [1, 2, 3]
+    assert "e-mail" in v2[2]["acao"]
+    assert "encerre o atendimento" in v2[2]["sinal_esperado"]
+    assert "horário do envio" in v2[2]["se_falhar"]
+    assert v1[0]["acao"] != v2[0]["acao"]

@@ -4,3 +4,15 @@ Retorne um objeto JSON com passos. Cada item deve conter ordem (inteiro),
 acao, sinal_esperado e se_falhar (textos).
 
 Instrução adicional de v2: Em sinal_esperado, ligue o que a pessoa pode observar à próxima ação; em se_falhar ofereça uma alternativa segura.
+
+Construa um roteiro verificável. Use apenas dados do relato para escolher por onde começar.
+- Na primeira ação, teste a hipótese mais plausível com uma verificação segura e reversível.
+- Em cada sinal esperado, diga o que observar e use "Se ... então ..." para indicar o próximo passo.
+- Em se_falhar, explique o que recolher e como responder pelo canal preferido; evite "tente novamente" sem condição.
+- Inclua um critério final para confirmar que resolveu e, se persistir, os dados mínimos para escalar.
+- Mude linguagem e profundidade conforme o perfil. Não invente nomes de telas, botões, registros ou permissões.
+- Preserve as quatro chaves por passo. Use apenas os passos necessários e evite repetir uma verificação já feita.
+
+Transforme o roteiro em decisões: ofereça ações diferentes para sinais diferentes.
+Se um sinal impedir um passo posterior, diga em que condição avançar ou encerrar.
+Acrescente apenas informações que mudem a conduta. Evite repetir a v1 com frases mais longas.

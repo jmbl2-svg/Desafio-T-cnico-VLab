@@ -22,3 +22,12 @@ confirmação pelo canal. A simulação serve para demonstrar o fluxo da rubrica
 5. Exporte o par concluído junto com as duas execuções.
 
 A amostra deste repositório usa provedor simulado e rubrica ilustrativa.
+
+## O que observar na versão 2
+
+A v2 de resolução pede uma verificação segura, sinais ligados a decisões
+e um critério explícito de fechamento ou encaminhamento. No cenário offline de
+pasta compartilhada, a etapa extra confirma se o arquivo abriu e define quais
+dados informar se a falha persistir. As notas de amostras antigas continuam
+ilustrativas; para medir ganho real, gere um novo par com o mesmo modelo efetivo
+e compare clareza, adequação ao cliente e acionabilidade. Compare as decisões práticas de cada versão, além da quantidade de texto.

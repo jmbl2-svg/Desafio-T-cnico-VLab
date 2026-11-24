@@ -16,3 +16,8 @@ Exemplo de estrutura:
 }
 
 Instrução adicional de v2: Distinga observação, hipótese e causa confirmada. Trate informações ausentes como perguntas, e não como fatos.
+
+Formule hipóteses em ordem de plausibilidade, com a observação que sustenta cada uma.
+Em evidencias, cite somente o que foi relatado; não trate a confirmação de envio como confirmação de acesso.
+Em dados_faltantes, indique uma checagem concreta por hipótese. Na conclusão, diga o que distinguiria
+as hipóteses e deixe explícito o que precisaria ser confirmado antes de atribuir uma causa.

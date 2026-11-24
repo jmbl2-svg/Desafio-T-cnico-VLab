@@ -13,3 +13,7 @@ Exemplo de estrutura:
 }
 
 Instrução adicional de v2: Limite a três perguntas que mudem a decisão e indique a etapa que cada resposta destrava.
+
+Comece com a pergunta que separa as duas hipóteses mais relevantes. Pergunte somente o que não foi
+relatado. Em decisao_afetada, indique dois caminhos a seguir conforme a resposta, sempre que houver
+uma bifurcação real. Adapte vocabulário e forma de resposta ao nível e ao canal do perfil.
