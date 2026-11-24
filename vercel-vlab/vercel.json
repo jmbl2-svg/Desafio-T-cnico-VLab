@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    {
+      "destination": "https://desafio-t-cnico-vlab.onrender.com/",
+      "source": "/"
+    },
+    {
+      "destination": "https://desafio-t-cnico-vlab.onrender.com/:path*",
+      "source": "/:path*"
+    }
+  ],
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "framework": null
+}
