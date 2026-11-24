@@ -1,0 +1,16 @@
+.roteiro-v2-legado:has(+ #roteiro-v2-react .roteiro-v2) { display: none; }
+.roteiro-v2 { display: grid; gap: .75rem; list-style: none; margin: 0; padding: 0; }
+.roteiro-v2 li {
+  display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: .7rem;
+  padding: .8rem; border: 1px solid var(--card-border); border-radius: .65rem; background: var(--card-bg);
+}
+.roteiro-numero {
+  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .55rem;
+  font-weight: 750; color: var(--positive); border: 1px solid currentColor;
+}
+.roteiro-conteudo h4 { margin: .15rem 0 .5rem; font-size: .95rem; }
+.roteiro-sinal { color: var(--positive); margin: 0 0 .5rem; overflow-wrap: anywhere; }
+.roteiro-sinal strong { display: block; font-size: .8rem; margin-bottom: .18rem; }
+.roteiro-v2 details { border-top: 1px solid var(--card-border); padding-top: .45rem; }
+.roteiro-v2 summary { cursor: pointer; font-weight: 650; color: var(--negative); }
+.roteiro-v2 details p { margin: .35rem 0 0; color: var(--text-main); overflow-wrap: anywhere; }

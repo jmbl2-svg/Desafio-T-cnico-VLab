@@ -78,6 +78,11 @@
     .alert { padding: 0.8rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.88rem; }
     .alert-error { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--negative); }
     .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--positive); }
+    #col-v1, #col-v2 { min-width: 0; }
+    #col-v2 .output-box { border-top: 3px solid var(--positive); }
+    #col-v1 .output-box { border-top: 3px solid var(--accent); }
+    #col-v1 .output-box, #col-v2 .output-box { overflow-wrap: anywhere; }
+    #col-v2 .output-header { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
@@ -436,6 +441,7 @@
     }
 
     async function executarComparacao() {
+      document.dispatchEvent(new CustomEvent('vlab:comparacao', { detail: null }));
       const btn = document.getElementById('btn-comparar');
       btn.disabled = true;
       btn.innerText = 'Comparando...';
@@ -494,7 +500,8 @@
               <span style="color: var(--positive); font-weight: 700;">VERSÃO 2 (Aprimorada)</span>
               <span style="font-size: 0.75rem;">ID: ${runV2Id}</span>
             </div>
-            ${renderizarConteudo(tipo, dataV2.saida)}
+            <div class="roteiro-v2-legado">${renderizarConteudo(tipo, dataV2.saida)}</div>
+            <div id="roteiro-v2-react"></div>
           </div>
         `;
 
@@ -507,6 +514,9 @@
         const compData = await compRes.json();
         if (!compRes.ok) throw new Error(compData.detail || 'Falha ao criar a comparação.');
         activeComparisonId = compData.comparison_id;
+        document.dispatchEvent(new CustomEvent('vlab:comparacao', {
+          detail: { v2: dataV2.saida }
+        }));
 
         montarFormularioRubrica();
         document.getElementById('rubric-container').style.display = 'block';
@@ -613,5 +623,6 @@
       .then(data => showSession(data.usuario))
       .catch(() => mostrarAlerta('Não foi possível verificar a sessão. Recarregue a página.'));
   </script>
+<!-- frontend interativo -->
 </body>
 </html>

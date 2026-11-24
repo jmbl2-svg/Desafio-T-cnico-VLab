@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, model_validator
 
@@ -235,7 +235,23 @@ def atualizar_avaliacao(comparison_id: str, payload: AvaliacaoInput):
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def pagina_inicial():
-    return (RAIZ / "frontend" / "standalone.html").read_text(encoding="utf-8")
+    pagina = (RAIZ / "frontend" / "standalone.html").read_text(encoding="utf-8")
+    pasta = RAIZ / "frontend" / "dist"
+    if all((pasta / nome).is_file() for nome in ("comparacao.js", "comparacao.css")):
+        assets = (
+            '<link rel="stylesheet" href="/frontend-assets/comparacao.css">'
+            '<script type="module" src="/frontend-assets/comparacao.js"></script>'
+        )
+        pagina = pagina.replace("<!-- frontend interativo -->", assets)
+    return pagina
+
+
+@app.get("/frontend-assets/{nome}", include_in_schema=False)
+def servir_componente(nome: Literal["comparacao.js", "comparacao.css"]):
+    caminho = RAIZ / "frontend" / "dist" / nome
+    if not caminho.is_file():
+        raise HTTPException(404, "Componente não compilado.")
+    return FileResponse(caminho)
 
 
 @app.get("/api/comparacoes/{comparison_id}/exportar")

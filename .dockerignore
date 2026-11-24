@@ -8,5 +8,12 @@
 !IA/**
 !frontend/
 !frontend/standalone.html
+!frontend/package.json
+!frontend/pnpm-lock.yaml
+!frontend/pnpm-workspace.yaml
+!frontend/vite.config.mjs
+!frontend/tsconfig.json
+!frontend/src/
+!frontend/src/**
 **/__pycache__/
 **/.env
