@@ -1,6 +1,7 @@
 import logging
 import io
 import json
+import os
 from contextvars import ContextVar
 from hashlib import sha256
 from pathlib import Path
@@ -41,7 +42,12 @@ async def verificar_sessao(request: Request, call_next):
         return await call_next(request)
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         origem = request.headers.get("origin")
-        if origem and origem != str(request.base_url).rstrip("/"):
+        origens_permitidas = {
+            valor.strip().rstrip("/")
+            for valor in os.getenv("VLAB_ORIGENS_PUBLICAS", "").split(",")
+            if valor.strip()
+        } or {str(request.base_url).rstrip("/")}
+        if origem and (origem == "null" or origem not in origens_permitidas):
             return JSONResponse({"detail": "Origem da solicitação inválida."}, status_code=403)
     if caminho in PUBLICOS:
         return await call_next(request)
