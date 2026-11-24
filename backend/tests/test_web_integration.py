@@ -9,6 +9,23 @@ def entrar(client, usuario):
     assert client.post("/api/auth/login", json=credenciais).status_code == 200
 
 
+def test_auth_com_origem_publica_atras_de_proxy(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    origem_publica = "https://vlab.example"
+    origem_backend = "https://backend.example"
+    monkeypatch.setenv("VLAB_ORIGENS_PUBLICAS", origem_publica)
+    credenciais = {"usuario": "teste-proxy", "senha": "senha-ficticia-123"}
+    with TestClient(app, base_url=origem_backend) as client:
+        for endpoint in ("/api/auth/registro", "/api/auth/login"):
+            rejeitado = client.post(endpoint, json=credenciais, headers={"Origin": origem_backend})
+            assert rejeitado.status_code == 403
+
+        headers = {"Origin": origem_publica}
+        assert client.post("/api/auth/registro", json=credenciais, headers=headers).status_code == 201
+        assert client.post("/api/auth/login", json=credenciais, headers=headers).status_code == 200
+        assert client.get("/api/perfis").status_code == 200
+
+
 def test_sessao_e_isolamento_de_execucoes(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("LLM_PROVIDER", "fake")
